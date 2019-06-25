@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:SaintSender.UI.Views"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
-        <Button>Login</Button>
+    <Grid d:DataContext="{d:DesignInstance Type=local:MainWindow}">
+        <Button Command="{Binding SignInCommand}">Login</Button>
     </Grid>
 </UserControl>

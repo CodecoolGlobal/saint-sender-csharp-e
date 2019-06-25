@@ -1,4 +1,5 @@
-﻿using SaintSender.Backend.Models;
+﻿using SaintSender.Backend.Logic;
+using SaintSender.Backend.Models;
 using SaintSender.UI.Utils;
 using System;
 using System.Windows;
@@ -13,9 +14,11 @@ namespace SaintSender.UI.Views
     {
         public ConfigHandler Config { get; set; }
 
+        public MailRepository Repository { get; set; }
+
         public ICommand SignInCommand { get; set; }
 
-        public LoginConfig(ConfigHandler config)
+        public LoginConfig(ConfigHandler config, MailRepository repo)
         {
             Config = config;
             SignInCommand = new RelayCommand(SignIn);
@@ -26,7 +29,7 @@ namespace SaintSender.UI.Views
         private void SignIn(object obj)
         {
             Config.Save();
-            MessageBox.Show("WTF");
+            Repository = new MailRepository(Config.Address, Config.Password);
         }
     }
 }

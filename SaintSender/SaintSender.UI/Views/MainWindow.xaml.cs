@@ -1,4 +1,5 @@
-﻿using SaintSender.Backend.Models;
+﻿using SaintSender.Backend.Logic;
+using SaintSender.Backend.Models;
 using SaintSender.UI.Utils;
 using System;
 using System.Collections.ObjectModel;
@@ -19,6 +20,14 @@ namespace SaintSender.UI.Views
         public ICommand ChangeSelectedMailCommand { get; set; }
 
         public ObservableCollection<MailModel> Mails { get; set; } = new ObservableCollection<MailModel>();
+
+        public ICommand SignInCommand { get; set; }
+
+        public ConfigHandler Config { get; set; }
+
+        public MailRepository Repository { get; set; }
+
+        private LoginConfig _loginConfigWindow;
 
         public MailModel SelectedMail
         {
@@ -41,18 +50,26 @@ namespace SaintSender.UI.Views
             SelectedMail = Mails[0];
         }
 
-        public ICommand SignInCommand { get; set; }
-
-        public ConfigHandler Config { get; set; }
-
         public MainWindow()
         {
-            SignInCommand = new RelayCommand(ShowSignInWindow);
-            Config = ConfigHandler.Load();
             InitializeComponent();
             Debug();
+            Unloaded += MainWindow_Unloaded;
+
+            // Initialize login config window
+            Config = ConfigHandler.Load();
+            _loginConfigWindow = GetLoginConfig();
+
+            // Setup commands
+            SignInCommand = new RelayCommand(ShowSignInWindow);
             ChangeSelectedMailCommand = new RelayCommand(ChangeSelectedMail);
+
             DataContext = this;
+        }
+
+        private void MainWindow_Unloaded(object sender, RoutedEventArgs e)
+        {
+            Environment.Exit(0);
         }
 
         public void Debug()
@@ -72,7 +89,16 @@ namespace SaintSender.UI.Views
 
         private void ShowSignInWindow(object param)
         {
-            new LoginConfig(Config).Show();
+            if (!_loginConfigWindow.IsLoaded)
+            {
+                _loginConfigWindow = GetLoginConfig();
+            }
+            _loginConfigWindow.Show();
+        }
+
+        private LoginConfig GetLoginConfig()
+        {
+            return new LoginConfig(Config, Repository);
         }
     }
 }
