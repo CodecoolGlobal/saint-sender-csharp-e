@@ -67,6 +67,9 @@
     <Compile Include="Views\ReadMailView.xaml.cs">
       <DependentUpon>ReadMailView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\SendEmailWindow.xaml.cs">
+      <DependentUpon>SendEmailWindow.xaml</DependentUpon>
+    </Compile>
     <Page Include="Views\ButtonMenu.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -90,6 +93,10 @@
     <Page Include="Views\ReadMailView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\SendEmailWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
   <ItemGroup>
