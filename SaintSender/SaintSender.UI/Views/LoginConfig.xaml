@@ -1,0 +1,43 @@
+﻿<Window x:Class="SaintSender.UI.Views.LoginConfig"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SaintSender.UI.Views"
+        mc:Ignorable="d"
+        Title="LoginConfig" Height="200" Width="300">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="8*"/>
+            <RowDefinition Height="3*"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="4*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Label>Address:</Label>
+            <TextBox Grid.Column="1" Margin="5" Text="{Binding Config.Address}"></TextBox>
+            <Label Grid.Row="1">Password:</Label>
+            <TextBox Grid.Row="1" Grid.Column="1" Margin="5" Text="{Binding Config.Password}"></TextBox>
+        </Grid>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="15"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Margin="5" Command="{Binding SignInCommand}">
+                Sign In
+            </Button>
+            <GridSplitter/>
+            <Button Grid.Column="2" Margin="5">
+                Cancel
+            </Button>
+        </Grid>
+    </Grid>
+</Window>

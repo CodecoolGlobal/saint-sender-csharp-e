@@ -1,4 +1,6 @@
-﻿using System;
+﻿using SaintSender.Backend.Models;
+using SaintSender.UI.Utils;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,9 +22,21 @@ namespace SaintSender.UI.Views
     /// </summary>
     public partial class MainWindow : Window
     {
+        public ICommand SignInCommand { get; set; }
+
+        public ConfigHandler Config { get; set; }
+
         public MainWindow()
         {
+            SignInCommand = new RelayCommand(ShowSignInWindow);
+            Config = ConfigHandler.Load();
             InitializeComponent();
+            DataContext = this;
+        }
+
+        private void ShowSignInWindow(object param)
+        {
+            new LoginConfig(Config).Show();
         }
     }
 }
