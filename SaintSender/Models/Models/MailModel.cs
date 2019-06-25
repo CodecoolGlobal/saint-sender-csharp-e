@@ -10,6 +10,7 @@ namespace Models.Models
         public string Sender { get; set; } = "[Error] Sender didn't load";
         public List<string> Receivers { get; } = new List<string>();
         public DateTime Date { get; set; }
+        public List<object> Attachments { get; } = new List<object>();
         public bool Read { get; set; } = false;
 
         public MailModel() { }
@@ -25,6 +26,11 @@ namespace Models.Models
         public MailModel(string subject, string message, string sender, DateTime date, List<string> receivers) : this(subject, message, sender, date)
         {
             Receivers.AddRange(receivers);
+        }
+
+        public string GetReceiversString()
+        {
+            return string.Join(",", Receivers);
         }
     }
 }

@@ -103,11 +103,11 @@ namespace Models.Logic
         {
             var mailMessage = new System.Net.Mail.MailMessage();
             mailMessage.From = new System.Net.Mail.MailAddress(email.Sender);
-            mailMessage.To.Add(email.Receiver);
-            mailMessage.ReplyToList.Add(email.FromAddress);
+            mailMessage.To.Add(email.GetReceiversString());
+            mailMessage.ReplyToList.Add(email.GetReceiversString());
             mailMessage.Subject = email.Subject;
-            mailMessage.Body = email.Body;
-            mailMessage.IsBodyHtml = email.IsHtml;
+            mailMessage.Body = email.Message;
+            mailMessage.IsBodyHtml = false;
 
             foreach (System.Net.Mail.Attachment attachment in email.Attachments)
             {
@@ -121,6 +121,7 @@ namespace Models.Logic
                 Raw = Encode(mimeMessage.ToString())
             };
 
+            var service = new Gmail();
             Google.Apis.Gmail.v1.UsersResource.MessagesResource.SendRequest request = service.Users.Messages.Send(gmailMessage, ServiceEmail);
 
             request.Execute();
