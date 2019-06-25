@@ -1,8 +1,10 @@
-﻿using SaintSender.Backend.Models;
+﻿using SaintSender.Backend.Logic;
+using SaintSender.Backend.Models;
 using SaintSender.UI.Utils;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
@@ -43,24 +45,19 @@ namespace SaintSender.UI.Views
 
         public MainWindow()
         {
+            DataContext = this;
             InitializeComponent();
             Debug();
             ChangeSelectedMailCommand = new RelayCommand(ChangeSelectedMail);
-            DataContext = this;
         }
 
         public void Debug()
         {
 
-            MailModel mail;
-            for (int i = 0; i < 5; i++)
+            MailRepository mailRepo = new MailRepository();
+            foreach (var item in mailRepo.GetAllMails())
             {
-                mail = new MailModel();
-                mail.Sender = "sender " + i;
-                mail.Message = "msg " + i;
-                mail.Subject = "subject " + i;
-                mail.Date = DateTime.Now;
-                Mails.Add(mail);
+                Mails.Add(item);
             }
         }
     }
