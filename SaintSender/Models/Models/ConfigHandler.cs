@@ -8,7 +8,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Models.Models
+namespace SaintSender.Backend.Models
 {
     /// <summary>
     /// This class contains user login information and methods for
@@ -34,7 +34,7 @@ namespace Models.Models
         /// a binary file.
         /// </summary>
         /// <returns>The configuration from file.</returns>
-        public static ConfigHandler Load(string path)
+        public static ConfigHandler Load(string path = "login_info.bin")
         {
             ConfigHandler config = null;
             try
@@ -57,7 +57,7 @@ namespace Models.Models
         /// Serializes this instance of the login configuration into
         /// a file in the local storage.
         /// </summary>
-        public void Save(string path)
+        public void Save(string path = "login_info.bin")
         {
             using (FileStream fileStream = _storage.CreateFile(path))
             {
