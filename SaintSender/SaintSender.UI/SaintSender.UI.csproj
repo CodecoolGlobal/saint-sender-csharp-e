@@ -55,7 +55,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Utils\RelayCommand.cs" />
     <Compile Include="ViewModels\InboxViewModel.cs" />
     <Compile Include="ViewModels\ReadMailViewModel.cs" />
     <Compile Include="Views\ButtonMenu.xaml.cs">
@@ -131,7 +130,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SaintSender.Backend\SaintSender.Backend.csproj">
-      <Project>{03FCED37-085A-41EC-AE63-96CC11328CCA}</Project>
+      <Project>{03fced37-085a-41ec-ae63-96cc11328cca}</Project>
       <Name>SaintSender.Backend</Name>
     </ProjectReference>
   </ItemGroup>

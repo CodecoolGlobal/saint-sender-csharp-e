@@ -2,7 +2,7 @@
 using System.IO;
 using System.IO.IsolatedStorage;
 
-namespace Models.Models.Tests
+namespace SaintSender.Backend.Models.Tests
 {
     [TestClass()]
     public class ConfigHandlerTests

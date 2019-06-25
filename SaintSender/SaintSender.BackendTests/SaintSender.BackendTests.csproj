@@ -63,8 +63,8 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Models\SaintSender.Backend.csproj">
-      <Project>{03FCED37-085A-41EC-AE63-96CC11328CCA}</Project>
+    <ProjectReference Include="..\SaintSender.Backend\SaintSender.Backend.csproj">
+      <Project>{03fced37-085a-41ec-ae63-96cc11328cca}</Project>
       <Name>SaintSender.Backend</Name>
     </ProjectReference>
   </ItemGroup>
