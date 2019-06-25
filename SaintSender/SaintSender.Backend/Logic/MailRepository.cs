@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Search;

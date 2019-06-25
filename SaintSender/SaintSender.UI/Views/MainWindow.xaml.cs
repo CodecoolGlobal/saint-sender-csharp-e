@@ -1,5 +1,4 @@
-﻿using Models.Logic;
-using Models.Models;
+﻿using SaintSender.Backend.Models;
 using SaintSender.UI.Utils;
 using System;
 using System.Collections.ObjectModel;

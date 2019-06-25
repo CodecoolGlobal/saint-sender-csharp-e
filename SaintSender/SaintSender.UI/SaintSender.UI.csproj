@@ -120,7 +120,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Models\SaintSender.Backend.csproj">
+    <ProjectReference Include="..\SaintSender.Backend\SaintSender.Backend.csproj">
       <Project>{03FCED37-085A-41EC-AE63-96CC11328CCA}</Project>
       <Name>SaintSender.Backend</Name>
     </ProjectReference>
