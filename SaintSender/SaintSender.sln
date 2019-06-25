@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.28922.388
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SaintSender.UI", "SaintSender.UI\SaintSender.UI.csproj", "{ED56FF6C-61EB-47A1-B41E-ECAFCAE75F75}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SaintSender.Backend", "Models\SaintSender.Backend.csproj", "{03FCED37-085A-41EC-AE63-96CC11328CCA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SaintSender.Backend", "SaintSender.Backend\SaintSender.Backend.csproj", "{03FCED37-085A-41EC-AE63-96CC11328CCA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SaintSender.BackendTests", "SaintSender.BackendTests\SaintSender.BackendTests.csproj", "{14494D13-7991-4C83-AC2F-CF6ECBA9A3C7}"
 EndProject
