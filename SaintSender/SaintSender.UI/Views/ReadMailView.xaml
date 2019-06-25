@@ -19,6 +19,6 @@
         <TextBlock Text="{Binding Path=SelectedMail.Subject}" Grid.ColumnSpan="2"/>
         <TextBlock Text="{Binding Path=SelectedMail.Date}" Grid.Row="1"/>
         <TextBlock Text="{Binding Path=SelectedMail.Sender}" Grid.Row="1" Grid.Column="1"/>
-        <TextBlock Text="{Binding Path=SelectedMail.Message}" Grid.Row="2" Grid.ColumnSpan="2"/>
+        <WebBrowser Name="browserMessageDisplay" Grid.Row="2" Grid.ColumnSpan="2"/>
     </Grid>
 </UserControl>

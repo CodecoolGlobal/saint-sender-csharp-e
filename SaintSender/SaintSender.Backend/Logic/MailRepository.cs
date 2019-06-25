@@ -4,21 +4,25 @@ using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Search;
 
-namespace Models.Logic
+namespace SaintSender.Backend.Logic
 {
     public class MailRepository
     {
-        private readonly string mailServer, login, password;
-        private readonly int port;
-        private readonly bool ssl;
+        private readonly string login, password;
+        private readonly string mailServer = "imap.gmail.com";
+        private readonly int port = 993;
+        private readonly bool ssl = true;
 
         public MailRepository()
         {
-            this.mailServer = "imap.gmail.com";
             this.login = "sunyibela@gmail.com";
             this.password = "6HcZbP9Zh439D4n";
-            this.port = 993;
-            this.ssl = true;
+        }
+
+        public MailRepository(string login, string password)
+        {
+            this.login = login;
+            this.password = password;
         }
 
         public MailRepository(string mailServer, int port, bool ssl, string login, string password)
@@ -81,7 +85,7 @@ namespace Models.Logic
                 // The Inbox folder is always available on all IMAP servers...
                 var inbox = client.Inbox;
                 inbox.Open(FolderAccess.ReadOnly);
-                var results = inbox.Search(SearchOptions.All, SearchQuery.NotSeen);
+                var results = inbox.Search(SearchOptions.All, SearchQuery.All);
                 foreach (var uniqueId in results.UniqueIds)
                 {
                     var message = inbox.GetMessage(uniqueId);

@@ -52,8 +52,6 @@ namespace SaintSender.UI.Views
 
         public void Debug()
         {
-            MailRepository mailRepo = new MailRepository();
-            Console.WriteLine(mailRepo.GetAllMails());
 
             MailModel mail;
             for (int i = 0; i < 5; i++)
