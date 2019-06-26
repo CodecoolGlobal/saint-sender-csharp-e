@@ -11,9 +11,6 @@
         <ListView.ItemTemplate>
             <DataTemplate>
                 <Grid>
-                    <Grid.InputBindings>
-                        <MouseBinding Gesture="LeftDoubleClick"  Command="{Binding ChangeSelectedMailCommand}" />
-                    </Grid.InputBindings>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="50*"/>
                         <ColumnDefinition Width="50*"/>

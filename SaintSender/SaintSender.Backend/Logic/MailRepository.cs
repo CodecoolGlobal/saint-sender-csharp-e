@@ -3,6 +3,7 @@ using System.Linq;
 using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Search;
+using MailKit.Security;
 using MimeKit;
 using SaintSender.Backend.Models;
 
@@ -14,7 +15,6 @@ namespace SaintSender.Backend.Logic
         private readonly string mailServer = "imap.gmail.com";
         private readonly int port = 993;
         private readonly bool ssl = true;
-        public bool IsLoginCredentialCorrect { get; set; } = false;
 
         public MailRepository()
         {
@@ -37,11 +37,19 @@ namespace SaintSender.Backend.Logic
             this.password = password;
         }
 
-        public bool AreCredentialsCorrect
+        /// <summary>
+        /// Last known state of login credentials. Set by <see cref="CheckCredentials"/>.
+        /// </summary>
+        public bool AreCredentialsCorrect { get; private set; } = false;
+
+        /// <summary>
+        /// Checks whether the current credentials are correct.
+        /// </summary>
+        /// <returns>true if the server properly authenticated the credentials.</returns>
+        public bool CheckCredentials()
         {
-            get
+            bool correct;
             {
-                bool correctLogin;
                 using (var client = new ImapClient())
                 {
                     client.Connect(mailServer, port, ssl);
@@ -53,15 +61,16 @@ namespace SaintSender.Backend.Logic
                     try
                     {
                         client.Authenticate(login, password);
-                        correctLogin = true;
+                        correct = true;
                     }
-                    catch (ServiceNotAuthenticatedException)
+                    catch (AuthenticationException)
                     {
-                        correctLogin = false;
+                        correct = false;
                     }
                 }
-                return correctLogin;
             }
+            AreCredentialsCorrect = correct;
+            return correct;
         }
 
         public IEnumerable<MailModel> GetUnreadMails()
@@ -88,7 +97,7 @@ namespace SaintSender.Backend.Logic
                     {
                         MimeMessage t = inbox.GetMessage(uniqueId);
 
-                        var mail = new MailModel(t);
+                        var mail = new MailModel(t, uniqueId);
 
                         mails.Add(mail);
 
@@ -96,9 +105,9 @@ namespace SaintSender.Backend.Logic
                         //inbox.AddFlags(uniqueId, MessageFlags.Seen, true);
                     }
                 }
-                catch
+                catch (AuthenticationException)
                 {
-
+                    AreCredentialsCorrect = false;
                 }
                 finally
                 {
@@ -122,25 +131,35 @@ namespace SaintSender.Backend.Logic
                 // the XOAUTH2 authentication mechanism.
                 client.AuthenticationMechanisms.Remove("XOAUTH2");
 
-                client.Authenticate(login, password);
-
-                // The Inbox folder is always available on all IMAP servers...
-                var inbox = client.Inbox;
-                inbox.Open(FolderAccess.ReadOnly);
-                var results = inbox.Search(SearchOptions.All, SearchQuery.All);
-                foreach (var uniqueId in results.UniqueIds)
+                try
                 {
-                    MimeMessage t = inbox.GetMessage(uniqueId);
+                    client.Authenticate(login, password);
 
-                    var mail = new MailModel(t);
+                    // The Inbox folder is always available on all IMAP servers...
+                    var inbox = client.Inbox;
+                    inbox.Open(FolderAccess.ReadOnly);
+                    var results = inbox.Search(SearchOptions.All, SearchQuery.All);
+                    foreach (var uniqueId in results.UniqueIds)
+                    {
+                        MimeMessage t = inbox.GetMessage(uniqueId);
 
-                    mails.Add(mail);
+                        var mail = new MailModel(t, uniqueId);
 
-                    //Mark message as read
-                    //inbox.AddFlags(uniqueId, MessageFlags.Seen, true);
+                        mails.Add(mail);
+
+                        //Mark message as read
+                        //inbox.AddFlags(uniqueId, MessageFlags.Seen, true);
+                    }
                 }
+                catch (AuthenticationException)
+                {
+                    AreCredentialsCorrect = false;
+                }
+                finally
+                {
 
-                client.Disconnect(true);
+                    client.Disconnect(true);
+                }
             }
 
             return mails;

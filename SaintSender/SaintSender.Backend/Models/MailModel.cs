@@ -1,4 +1,5 @@
-﻿using MimeKit;
+﻿using MailKit;
+using MimeKit;
 using System;
 using System.Linq;
 
@@ -11,6 +12,7 @@ namespace SaintSender.Backend.Models
         public string Sender { get; set; } = "[Error] Sender didn't load";
         public DateTime Date { get; set; }
         public bool Read { get; set; } = false;
+        public UniqueId ID { get; set; }
 
         public MailModel() { }
 
@@ -22,12 +24,33 @@ namespace SaintSender.Backend.Models
             Date = date;
         }
 
-        public MailModel(MimeMessage mimeMessage)
+        public MailModel(MimeMessage mimeMessage, UniqueId id)
         {
             Message = mimeMessage.HtmlBody;
             Subject = mimeMessage.Subject;
             Sender = mimeMessage.From.Mailboxes.First().Address;
             Date = mimeMessage.Date.DateTime;
+            ID = id;
+        }
+
+        public override bool Equals(object other)
+        {
+            if (!(other is MailModel))
+            {
+                return false;
+            }
+
+            if (ID == ((MailModel) other).ID)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return ID.ToString().GetHashCode();
         }
     }
 }

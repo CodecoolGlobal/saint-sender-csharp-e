@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 
@@ -32,6 +33,7 @@ namespace SaintSender.UI.Views
             _loginConfigWindow = GetLoginConfig();
 
             _repository = new MailRepository(Config.Address, Config.Password);
+            _repository.CheckCredentials();
 
             MailRefreshTimer.Interval = new TimeSpan(0, 0, 5);
             MailRefreshTimer.Tick += (obj, args) => RefreshMailList();
@@ -39,10 +41,7 @@ namespace SaintSender.UI.Views
 
             // Setup commands
             SignInCommand = new RelayCommand(ShowSignInWindow);
-            ChangeSelectedMailCommand = new RelayCommand(ChangeSelectedMail);
         }
-
-        public ICommand ChangeSelectedMailCommand { get; set; }
 
         public ObservableCollection<MailModel> Mails { get; set; } = new ObservableCollection<MailModel>();
 
@@ -78,11 +77,6 @@ namespace SaintSender.UI.Views
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public void ChangeSelectedMail(object o)
-        {
-            SelectedMail = Mails[0];
-        }
-
         private void MainWindow_Unloaded(object sender, RoutedEventArgs e)
         {
             Environment.Exit(0);
@@ -115,12 +109,13 @@ namespace SaintSender.UI.Views
 
         private void RefreshMailList()
         {
-            Mails.Clear();
             foreach (var item in Repository.GetAllMails())
             {
-                Mails.Add(item);
+                if (!Mails.Contains(item))
+                {
+                    Mails.Add(item);
+                }
             }
-            MessageBox.Show("refreshing mails");
         }
     }
 }

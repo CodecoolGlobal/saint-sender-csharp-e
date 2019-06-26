@@ -33,10 +33,18 @@ namespace SaintSender.UI.Views
         private void SignIn(object passwordBox)
         {
             var pb = passwordBox as PasswordBox;
-            Config.Password = pb.Password;
-            Config.Save();
-            Repository = new MailRepository(Config.Address, Config.Password);
-            Close();
+            var newRepo = new MailRepository(Config.Address, pb.Password);
+            if (newRepo.CheckCredentials())
+            {
+                Config.Password = pb.Password;
+                Config.Save();
+                Repository = newRepo;
+                Close();
+            }
+            else
+            {
+                MessageBox.Show("The entered credentials are incorrect.");
+            }
         }
     }
 }
