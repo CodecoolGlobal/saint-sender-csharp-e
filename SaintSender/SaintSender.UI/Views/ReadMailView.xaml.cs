@@ -1,4 +1,5 @@
 ﻿using SaintSender.Backend.Logic;
+using System;
 using System.Linq;
 using System.Windows.Controls;
 
@@ -13,10 +14,7 @@ namespace SaintSender.UI.Views
         {
             InitializeComponent();
 
-
-            MailRepository mailRepo = new MailRepository();
-            var t = mailRepo.GetAllMails();
-            browserMessageDisplay.NavigateToString(t.First());
+            //browserMessageDisplay.NavigateToString(((MainWindow) DataContext).SelectedMail.Message);
         }
     }
 }

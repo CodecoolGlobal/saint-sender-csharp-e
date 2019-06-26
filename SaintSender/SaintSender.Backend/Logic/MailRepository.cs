@@ -1,7 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Search;
+using MimeKit;
+using SaintSender.Backend.Models;
 
 namespace SaintSender.Backend.Logic
 {
@@ -67,9 +70,9 @@ namespace SaintSender.Backend.Logic
             return messages;
         }
 
-        public IEnumerable<string> GetAllMails()
+        public IEnumerable<MailModel> GetAllMails()
         {
-            var messages = new List<string>();
+            var mails = new List<MailModel>();
 
             using (var client = new ImapClient())
             {
@@ -87,9 +90,16 @@ namespace SaintSender.Backend.Logic
                 var results = inbox.Search(SearchOptions.All, SearchQuery.All);
                 foreach (var uniqueId in results.UniqueIds)
                 {
-                    var message = inbox.GetMessage(uniqueId);
+                    var mail = new MailModel();
 
-                    messages.Add(message.HtmlBody);
+                    MimeMessage t = inbox.GetMessage(uniqueId);
+
+                    mail.Message = t.HtmlBody;
+                    mail.Subject = t.Subject;
+                    mail.Sender = t.From.Mailboxes.First().Address;
+                    mail.Date = t.Date.DateTime;
+                    
+                    mails.Add(mail);
 
                     //Mark message as read
                     //inbox.AddFlags(uniqueId, MessageFlags.Seen, true);
@@ -98,7 +108,7 @@ namespace SaintSender.Backend.Logic
                 client.Disconnect(true);
             }
 
-            return messages;
+            return mails;
         }
     }
 }

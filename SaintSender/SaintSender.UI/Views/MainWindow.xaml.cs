@@ -4,6 +4,7 @@ using SaintSender.UI.Utils;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
@@ -59,6 +60,7 @@ namespace SaintSender.UI.Views
 
         public MainWindow()
         {
+            DataContext = this;
             InitializeComponent();
             Debug();
             Unloaded += MainWindow_Unloaded;
@@ -70,8 +72,6 @@ namespace SaintSender.UI.Views
             // Setup commands
             SignInCommand = new RelayCommand(ShowSignInWindow);
             ChangeSelectedMailCommand = new RelayCommand(ChangeSelectedMail);
-
-            DataContext = this;
         }
 
         private void MainWindow_Unloaded(object sender, RoutedEventArgs e)
@@ -82,15 +82,10 @@ namespace SaintSender.UI.Views
         public void Debug()
         {
 
-            MailModel mail;
-            for (int i = 0; i < 5; i++)
+            MailRepository mailRepo = new MailRepository();
+            foreach (var item in mailRepo.GetAllMails())
             {
-                mail = new MailModel();
-                mail.Sender = "sender " + i;
-                mail.Message = "msg " + i;
-                mail.Subject = "subject " + i;
-                mail.Date = DateTime.Now;
-                Mails.Add(mail);
+                Mails.Add(item);
             }
         }
 
