@@ -54,6 +54,7 @@
     <Compile Include="Models\MailRepository.cs" />
     <Compile Include="Models\MailModel.cs" />
     <Compile Include="Models\MailStorage.cs" />
+    <Compile Include="Models\ConfigHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

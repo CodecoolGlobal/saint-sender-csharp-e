@@ -14,6 +14,8 @@ namespace SaintSender.UI.Views
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private MailModel _selectedMail = new MailModel();
+        private MailRepository _repository;
+        private LoginConfig _loginConfigWindow;
 
 #warning probably already done in config branch check if causes problems
         private MailRepository mailRepo = new MailRepository();
@@ -23,6 +25,19 @@ namespace SaintSender.UI.Views
         public ICommand LoadMailsFromStorageCommand { get; set; }
 
         public ObservableCollection<MailModel> Mails { get; set; } = new ObservableCollection<MailModel>();
+
+        public ICommand SignInCommand { get; set; }
+
+        public ConfigHandler Config { get; set; }
+
+        public MailRepository Repository
+        {
+            get => _repository; set
+            {
+                _repository = value;
+                _repository.GetAllMails();
+            }
+        }
 
         public MailModel SelectedMail
         {
@@ -81,6 +96,10 @@ namespace SaintSender.UI.Views
                 Mails.Add(item);
             }
         }
+        private void MainWindow_Unloaded(object sender, RoutedEventArgs e)
+        {
+            Environment.Exit(0);
+        }
 
         /// <summary>
         /// If user already logged in load mails
@@ -102,6 +121,16 @@ namespace SaintSender.UI.Views
             ChangeSelectedMailCommand = new RelayCommand(ChangeSelectedMail);
             SaveMailsToStorageCommand = new RelayCommand(SaveMailsToStorage);
             LoadMailsFromStorageCommand = new RelayCommand(LoadMailsFromStorage);
+            Unloaded += MainWindow_Unloaded;
+
+            // Initialize login config window
+            Config = ConfigHandler.Load();
+            _loginConfigWindow = GetLoginConfig();
+
+            // Setup commands
+            SignInCommand = new RelayCommand(ShowSignInWindow);
+            ChangeSelectedMailCommand = new RelayCommand(ChangeSelectedMail);
         }
+    }
     }
 }

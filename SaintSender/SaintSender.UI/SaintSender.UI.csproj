@@ -56,7 +56,6 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Utils\BrowserBehavior.cs" />
-    <Compile Include="Utils\RelayCommand.cs" />
     <Compile Include="ViewModels\InboxViewModel.cs" />
     <Compile Include="ViewModels\ReadMailViewModel.cs" />
     <Compile Include="Views\ButtonMenu.xaml.cs">
@@ -76,6 +75,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\LoginConfig.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -83,6 +86,12 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\RelayCommand.cs" />
+    <Compile Include="ViewModels\ConfigHandlerViewModel.cs" />
+    <Compile Include="ViewModels\ViewModelBase.cs" />
+    <Compile Include="Views\LoginConfig.xaml.cs">
+      <DependentUpon>LoginConfig.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -122,7 +131,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SaintSender.Backend\SaintSender.Backend.csproj">
-      <Project>{03FCED37-085A-41EC-AE63-96CC11328CCA}</Project>
+      <Project>{03fced37-085a-41ec-ae63-96cc11328cca}</Project>
       <Name>SaintSender.Backend</Name>
     </ProjectReference>
   </ItemGroup>
