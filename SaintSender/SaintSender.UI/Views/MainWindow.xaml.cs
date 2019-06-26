@@ -20,6 +20,23 @@ namespace SaintSender.UI.Views
         private MailRepository _repository;
         private LoginConfig _loginConfigWindow;
 
+        public MainWindow()
+        {
+            DataContext = this;
+            InitializeComponent();
+            Unloaded += MainWindow_Unloaded;
+
+            // Initialize login config window
+            Config = ConfigHandler.Load();
+            _loginConfigWindow = GetLoginConfig();
+
+            _repository = new MailRepository(Config.Address, Config.Password);
+
+            // Setup commands
+            SignInCommand = new RelayCommand(ShowSignInWindow);
+            ChangeSelectedMailCommand = new RelayCommand(ChangeSelectedMail);
+        }
+
         public ICommand ChangeSelectedMailCommand { get; set; }
 
         public ObservableCollection<MailModel> Mails { get; set; } = new ObservableCollection<MailModel>();
@@ -56,22 +73,6 @@ namespace SaintSender.UI.Views
         public void ChangeSelectedMail(object o)
         {
             SelectedMail = Mails[0];
-        }
-
-        public MainWindow()
-        {
-            DataContext = this;
-            InitializeComponent();
-            Debug();
-            Unloaded += MainWindow_Unloaded;
-
-            // Initialize login config window
-            Config = ConfigHandler.Load();
-            _loginConfigWindow = GetLoginConfig();
-
-            // Setup commands
-            SignInCommand = new RelayCommand(ShowSignInWindow);
-            ChangeSelectedMailCommand = new RelayCommand(ChangeSelectedMail);
         }
 
         private void MainWindow_Unloaded(object sender, RoutedEventArgs e)
