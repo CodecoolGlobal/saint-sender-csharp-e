@@ -22,6 +22,7 @@ namespace SaintSender.UI.Views
     {
         private MailModel _selectedMail = new MailModel();
         private LoginConfig _loginConfigWindow;
+        private MailRepository _repository;
 
         public MainWindow()
         {
@@ -42,6 +43,9 @@ namespace SaintSender.UI.Views
 
             // Setup commands
             SignInCommand = new RelayCommand(ShowSignInWindow);
+            SaveMailsToStorageCommand = new RelayCommand(SaveMailsToStorage);
+            LoadMailsFromStorageCommand = new RelayCommand(LoadMailsFromStorage);
+            LoadMailsFromServerCommand = new RelayCommand(LoadMailsFromServer);
         }
         #region ICommands
         public ICommand SaveMailsToStorageCommand { get; set; }
@@ -88,10 +92,6 @@ namespace SaintSender.UI.Views
         #endregion
 
         #region Command methods
-        private void MainWindow_Unloaded(object sender, RoutedEventArgs e)
-        {
-            Environment.Exit(0);
-        }
 
         private void ShowSignInWindow(object param)
         {
@@ -146,58 +146,20 @@ namespace SaintSender.UI.Views
         {
             try
             {
-                Mails.Clear();
-                foreach (var item in Repository.GetAllMails())
-                {
-                    Mails.Add(item);
-                }
+                RefreshMailListAsync();
             }
             catch (Exception)
             {
                 Console.WriteLine("No user logged in");
             }
         }
-
-        /// <summary>
-        /// Get mails from gmail's webserver
-        /// </summary>
-        /// <param name="o"></param>
-        public void RefreshMails(object o)
-        {
-            Mails.Clear();
-            foreach (var item in Repository.GetAllMails())
-            {
-                Mails.Add(item);
-            }
-        }
         #endregion
-
-        public MainWindow()
-        {
-            DataContext = this;
-            InitializeComponent();
-            Unloaded += MainWindow_Unloaded;
-
-            // Initialize login config window
-            Config = ConfigHandler.Load();
-            _loginConfigWindow = GetLoginConfig();
-
-            // Debug
-#warning debug repo, remove once login fixed
-            Repository = new MailRepository();
-            Console.WriteLine(CheckForInternetConnection());
-
-            // Setup commands
-            SignInCommand = new RelayCommand(ShowSignInWindow);
-            SaveMailsToStorageCommand = new RelayCommand(SaveMailsToStorage);
-            LoadMailsFromStorageCommand = new RelayCommand(LoadMailsFromStorage);
-            LoadMailsFromServerCommand = new RelayCommand(LoadMailsFromServer);
-        }
 
         private LoginConfig GetLoginConfig()
         {
             return new LoginConfig(Config, Repository);
         }
+
         private void MainWindow_Unloaded(object sender, RoutedEventArgs e)
         {
             Environment.Exit(0);
@@ -208,29 +170,25 @@ namespace SaintSender.UI.Views
         /// </summary>
         /// <returns>True if connection was succesful</returns>
         private static bool CheckForInternetConnection()
+        {
+            return true;
+        }
+
         public async Task Debug()
         {
 
             MailRepository mailRepo = new MailRepository();
             Mails.Clear();
-            var items = await Task<IEnumerable<MailModel>>.Factory.StartNew(mailRepo.GetAllMails);
+            var items = await Task<IEnumerable<MailModel>>.Factory.StartNew(() => mailRepo.GetLastMails(10));
             foreach (var item in items)
             {
                 Mails.Add(item);
             }
         }
 
-        private void ShowSignInWindow(object param)
-        {
-            if (!_loginConfigWindow.IsLoaded)
-            {
-                return false;
-            }
-        }
-
         private async Task RefreshMailListAsync()
         {
-            IEnumerable<MailModel> mails = await Task< IEnumerable < MailModel >>.Factory.StartNew(Repository.GetAllMails);
+            IEnumerable<MailModel> mails = await Task< IEnumerable < MailModel >>.Factory.StartNew(() => Repository.GetLastMails(10));
             foreach (var item in mails)
             {
                 if (!Mails.Contains(item))
