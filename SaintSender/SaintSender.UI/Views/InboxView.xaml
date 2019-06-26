@@ -18,7 +18,7 @@
             <Setter Property = "FontSize" Value = "12" />
         </Style>
     </UserControl.Resources>
-    <ListView ItemsSource="{Binding Mails}" d:DataContext="{d:DesignInstance Type=local:MainWindow}"
+    <ListView ItemsSource="{Binding SelectedMailList}" d:DataContext="{d:DesignInstance Type=local:MainWindow}"
               SelectionMode="Single" SelectedItem="{Binding SelectedMail}" Style="{StaticResource listViewBackground}">
         <ListView.ItemTemplate>
             <DataTemplate>

@@ -12,6 +12,8 @@
         <Button Width="70" Command="{Binding LoadMailsFromServerCommand}">Refresh</Button>
         <Button Width="70" Command="{Binding SaveMailsToStorageCommand}">Store</Button>
         <Button Width="150" Background="#4d0000" Foreground="#DDDDDD" Command="{Binding LoadMailsFromStorageCommand}">[Debug]Restore</Button>
+        <TextBox x:Name="SearchBox" Width="200"></TextBox>
+        <Button Command="{Binding SearchCommand}" CommandParameter="{Binding Text, ElementName=SearchBox}" IsDefault="{Binding IsFocused, ElementName=SearchBox}">Search</Button>
         <Label Width="100" VerticalAlignment="Stretch" IsEnabled="False" BorderThickness="1" BorderBrush="#666666" Visibility="Visible"
                Background="DarkRed" Foreground="#DDDDDD" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">Offline Mode</Label>
     </StackPanel>
