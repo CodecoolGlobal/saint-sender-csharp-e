@@ -84,9 +84,9 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Utils\RelayCommand.cs" />
-    <Compile Include="Utils\SendCommand.cs" />
     <Compile Include="ViewModels\InboxViewModel.cs" />
     <Compile Include="ViewModels\ReadMailViewModel.cs" />
+    <Compile Include="ViewModels\SendMailViewModel.cs" />
     <Compile Include="Views\ButtonMenu.xaml.cs">
       <DependentUpon>ButtonMenu.xaml</DependentUpon>
     </Compile>
