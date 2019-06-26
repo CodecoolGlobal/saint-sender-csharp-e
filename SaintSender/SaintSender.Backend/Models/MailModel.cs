@@ -36,7 +36,10 @@ namespace SaintSender.Backend.Models
         /// Gets and sets whether the email is marked as read or not
         /// </summary>
         public bool Read { get; set; } = false;
-        public UniqueId ID { get; set; }
+        /// <summary>
+        /// Gets and sets the unique id of the email that is used for comparing two emails.
+        /// </summary>
+        public UniqueId ID { get => iD; set => iD = value; }
 
         /// <summary>
         /// Initializes a new empty instance of the MailModel
@@ -74,7 +77,7 @@ namespace SaintSender.Backend.Models
                 return false;
             }
 
-            if (ID == ((MailModel) other).ID)
+            if (ID == ((MailModel)other).ID)
             {
                 return true;
             }
@@ -89,6 +92,8 @@ namespace SaintSender.Backend.Models
 
         [NonSerialized]
         private static string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"/SaintSender";
+        [NonSerialized]
+        private UniqueId iD;
 
         /// <summary>
         /// Stores email to isolated storage
