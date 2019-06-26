@@ -7,18 +7,22 @@
         xmlns:views="clr-namespace:SaintSender.UI.Views"
         xmlns:viewmodels="clr-namespace:SaintSender.UI.ViewModels"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="MainWindow" Height="720" Width="1280">
+    <Grid Background="#666666">
         <Grid.RowDefinitions>
             <RowDefinition Height="30"/>
             <RowDefinition Height="400*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="5*"/>
-            <ColumnDefinition Width="13*"/>
+            <ColumnDefinition Width="100*"/>
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition Width="150*"/>
         </Grid.ColumnDefinitions>
-        <views:ButtonMenu Grid.ColumnSpan="2"/>
-        <views:InboxView Grid.Row="1" Grid.RowSpan="2"/>
-        <views:ReadMailView Grid.Row="1" Grid.Column="1" Grid.RowSpan="2"/>
+        <views:ButtonMenu Grid.ColumnSpan="3"/>
+        <views:InboxView Grid.Row="1" Grid.RowSpan="2" Margin="5,0,0,5"/>
+        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
+            <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
+        </StackPanel>
+        <views:ReadMailView Grid.Row="1" Grid.Column="2" Grid.RowSpan="2" Margin="0,0,5,5"/>
     </Grid>
 </Window>

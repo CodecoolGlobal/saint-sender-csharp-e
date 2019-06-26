@@ -51,8 +51,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Logic\MailRepository.cs" />
+    <Compile Include="Models\MailRepository.cs" />
     <Compile Include="Models\MailModel.cs" />
+    <Compile Include="Models\MailStorage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
