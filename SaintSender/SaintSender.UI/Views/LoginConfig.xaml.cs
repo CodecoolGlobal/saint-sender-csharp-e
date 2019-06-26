@@ -3,6 +3,7 @@ using SaintSender.Backend.Models;
 using SaintSender.UI.Utils;
 using System;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace SaintSender.UI.Views
@@ -18,18 +19,24 @@ namespace SaintSender.UI.Views
 
         public ICommand SignInCommand { get; set; }
 
+        public ICommand CancelCommand { get; set; }
+
         public LoginConfig(ConfigHandler config, MailRepository repo)
         {
             Config = config;
             SignInCommand = new RelayCommand(SignIn);
+            CancelCommand = new RelayCommand((o) => Close());
             InitializeComponent();
             DataContext = this;
         }
 
-        private void SignIn(object obj)
+        private void SignIn(object passwordBox)
         {
+            var pb = passwordBox as PasswordBox;
+            Config.Password = pb.Password;
             Config.Save();
             Repository = new MailRepository(Config.Address, Config.Password);
+            Close();
         }
     }
 }
