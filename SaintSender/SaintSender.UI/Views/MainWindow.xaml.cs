@@ -32,8 +32,8 @@ namespace SaintSender.UI.Views
             Config = ConfigHandler.Load();
             _loginConfigWindow = GetLoginConfig();
 
-            _repository = new MailRepository(Config.Address, Config.Password);
-            _repository.CheckCredentials();
+            Repository = new MailRepository(Config.Address, Config.Password);
+            Repository.CheckCredentials();
 
             MailRefreshTimer.Interval = new TimeSpan(0, 0, 5);
             MailRefreshTimer.Tick += (obj, args) => RefreshMailList();
