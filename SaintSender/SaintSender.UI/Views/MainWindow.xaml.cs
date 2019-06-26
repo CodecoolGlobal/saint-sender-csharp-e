@@ -1,7 +1,9 @@
 ﻿using SaintSender.Backend.Models;
 using SaintSender.UI.Utils;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Net.Mail;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
@@ -17,12 +19,10 @@ namespace SaintSender.UI.Views
         private MailRepository _repository;
         private LoginConfig _loginConfigWindow;
 
-#warning probably already done in config branch check if causes problems
-        private MailRepository mailRepo = new MailRepository();
-
         public ICommand ChangeSelectedMailCommand { get; set; }
         public ICommand SaveMailsToStorageCommand { get; set; }
         public ICommand LoadMailsFromStorageCommand { get; set; }
+        public ICommand LoadMailsFromServerCommand { get; set; }
 
         public ObservableCollection<MailModel> Mails { get; set; } = new ObservableCollection<MailModel>();
 
@@ -30,14 +30,7 @@ namespace SaintSender.UI.Views
 
         public ConfigHandler Config { get; set; }
 
-        public MailRepository Repository
-        {
-            get => _repository; set
-            {
-                _repository = value;
-                _repository.GetAllMails();
-            }
-        }
+        public MailRepository Repository { get; set; }
 
         public MailModel SelectedMail
         {
@@ -60,12 +53,13 @@ namespace SaintSender.UI.Views
             SelectedMail = Mails[0];
         }
 
-#warning Change to actual user once config is intergrated
         public void SaveMailsToStorage(object o)
         {
+            MailAddress address = new MailAddress(_repository.login);
+            string name = address.User;
             foreach (var item in Mails)
             {
-                item.Save("sunyibela");
+                item.Save(name);
             }
         }
 
@@ -73,13 +67,41 @@ namespace SaintSender.UI.Views
         /// Gets mails from local storage
         /// </summary>
         /// <param name="o"></param>
-#warning Change to actual user once config is intergrated
         public void LoadMailsFromStorage(object o)
         {
-            Mails.Clear();
-            foreach (var item in MailStorage.LoadMails("sunyibela"))
+            try
             {
-                Mails.Add(item);
+                Mails.Clear();
+                MailAddress address = new MailAddress(_repository.login);
+                string name = address.User;
+                foreach (var item in MailStorage.LoadMails(name))
+                {
+                    Mails.Add(item);
+                }
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("No user logged in");
+            }
+        }
+
+        /// <summary>
+        /// Gets mails from remote server
+        /// </summary>
+        /// <param name="o"></param>
+        public void LoadMailsFromServer(object o)
+        {
+            try
+            {
+                Mails.Clear();
+                foreach (var item in Repository.GetAllMails())
+                {
+                    Mails.Add(item);
+                }
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("No user logged in");
             }
         }
 
@@ -90,8 +112,7 @@ namespace SaintSender.UI.Views
         public void RefreshMails(object o)
         {
             Mails.Clear();
-            mailRepo = new MailRepository();
-            foreach (var item in mailRepo.GetAllMails())
+            foreach (var item in _repository.GetAllMails())
             {
                 Mails.Add(item);
             }
@@ -101,26 +122,10 @@ namespace SaintSender.UI.Views
             Environment.Exit(0);
         }
 
-        /// <summary>
-        /// If user already logged in load mails
-        /// </summary>
-#warning change to actual check once config is integrated
-        private void LoadInitialMails()
-        {
-            foreach (var item in mailRepo.GetAllMails())
-            {
-                Mails.Add(item);
-            }
-        }
-
         public MainWindow()
         {
             DataContext = this;
             InitializeComponent();
-            //LoadInitialMails();
-            ChangeSelectedMailCommand = new RelayCommand(ChangeSelectedMail);
-            SaveMailsToStorageCommand = new RelayCommand(SaveMailsToStorage);
-            LoadMailsFromStorageCommand = new RelayCommand(LoadMailsFromStorage);
             Unloaded += MainWindow_Unloaded;
 
             // Initialize login config window
@@ -130,7 +135,23 @@ namespace SaintSender.UI.Views
             // Setup commands
             SignInCommand = new RelayCommand(ShowSignInWindow);
             ChangeSelectedMailCommand = new RelayCommand(ChangeSelectedMail);
+            SaveMailsToStorageCommand = new RelayCommand(SaveMailsToStorage);
+            LoadMailsFromStorageCommand = new RelayCommand(LoadMailsFromStorage);
+            LoadMailsFromServerCommand = new RelayCommand(LoadMailsFromServer);
         }
-    }
+
+        private void ShowSignInWindow(object param)
+        {
+            if (!_loginConfigWindow.IsLoaded)
+            {
+                _loginConfigWindow = GetLoginConfig();
+            }
+            _loginConfigWindow.Show();
+        }
+
+        private LoginConfig GetLoginConfig()
+        {
+            return new LoginConfig(Config, Repository);
+        }
     }
 }

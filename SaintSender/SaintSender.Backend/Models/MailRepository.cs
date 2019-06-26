@@ -9,7 +9,8 @@ namespace SaintSender.Backend.Models
 {
     public class MailRepository
     {
-        private readonly string login, password;
+        public readonly string login;
+        private readonly string password;
         private readonly string mailServer = "imap.gmail.com";
         private readonly int port = 993;
         private readonly bool ssl = true;
