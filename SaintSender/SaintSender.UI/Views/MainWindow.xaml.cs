@@ -164,6 +164,7 @@ namespace SaintSender.UI.Views
             try
             {
                 RefreshMailListAsync();
+                SelectedMailList = Mails;
             }
             catch (Exception)
             {
