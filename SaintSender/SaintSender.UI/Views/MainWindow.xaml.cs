@@ -1,9 +1,10 @@
-﻿using Models.Logic;
-using Models.Models;
+﻿using SaintSender.Backend.Logic;
+using SaintSender.Backend.Models;
 using SaintSender.UI.Utils;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
@@ -16,10 +17,25 @@ namespace SaintSender.UI.Views
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private MailModel _selectedMail = new MailModel();
+        private MailRepository _repository;
+        private LoginConfig _loginConfigWindow;
 
         public ICommand ChangeSelectedMailCommand { get; set; }
 
         public ObservableCollection<MailModel> Mails { get; set; } = new ObservableCollection<MailModel>();
+
+        public ICommand SignInCommand { get; set; }
+
+        public ConfigHandler Config { get; set; }
+
+        public MailRepository Repository
+        {
+            get => _repository; set
+            {
+                _repository = value;
+                _repository.GetAllMails();
+            }
+        }
 
         public MailModel SelectedMail
         {
@@ -44,27 +60,47 @@ namespace SaintSender.UI.Views
 
         public MainWindow()
         {
+            DataContext = this;
             InitializeComponent();
             Debug();
+            Unloaded += MainWindow_Unloaded;
+
+            // Initialize login config window
+            Config = ConfigHandler.Load();
+            _loginConfigWindow = GetLoginConfig();
+
+            // Setup commands
+            SignInCommand = new RelayCommand(ShowSignInWindow);
             ChangeSelectedMailCommand = new RelayCommand(ChangeSelectedMail);
-            DataContext = this;
+        }
+
+        private void MainWindow_Unloaded(object sender, RoutedEventArgs e)
+        {
+            Environment.Exit(0);
         }
 
         public void Debug()
         {
-            MailRepository mailRepo = new MailRepository();
-            Console.WriteLine(mailRepo.GetAllMails());
 
-            MailModel mail;
-            for (int i = 0; i < 5; i++)
+            MailRepository mailRepo = new MailRepository();
+            foreach (var item in mailRepo.GetAllMails())
             {
-                mail = new MailModel();
-                mail.Sender = "sender " + i;
-                mail.Message = "msg " + i;
-                mail.Subject = "subject " + i;
-                mail.Date = DateTime.Now;
-                Mails.Add(mail);
+                Mails.Add(item);
             }
+        }
+
+        private void ShowSignInWindow(object param)
+        {
+            if (!_loginConfigWindow.IsLoaded)
+            {
+                _loginConfigWindow = GetLoginConfig();
+            }
+            _loginConfigWindow.Show();
+        }
+
+        private LoginConfig GetLoginConfig()
+        {
+            return new LoginConfig(Config, Repository);
         }
     }
 }

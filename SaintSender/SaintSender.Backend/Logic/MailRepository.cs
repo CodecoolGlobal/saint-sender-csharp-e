@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -11,25 +11,28 @@ using Google.Apis.Util.Store;
 using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Search;
-using Models.Models;
-using static Google.Apis.Gmail.v1.GmailService;
+using MimeKit;
+using SaintSender.Backend.Models;
 
-namespace Models.Logic
+namespace SaintSender.Backend.Logic
 {
     public class MailRepository
     {
-        private readonly string mailServer, login, password, clientSecret;
-        private readonly int port;
-        private readonly bool ssl;
+        private readonly string login, password, clientSecret;
+        private readonly string mailServer = "imap.gmail.com";
+        private readonly int port = 993;
+        private readonly bool ssl = true;
 
         public MailRepository()
         {
-            this.mailServer = "imap.gmail.com";
             this.login = "sunyibela@gmail.com";
             this.password = "6HcZbP9Zh439D4n";
-            this.clientSecret = "3tIIhaadXBvPHmPG__PdrWTj";
-            this.port = 993;
-            this.ssl = true;
+        }
+
+        public MailRepository(string login, string password)
+        {
+            this.login = login;
+            this.password = password;
         }
 
         public MailRepository(string mailServer, int port, bool ssl, string login, string password)
@@ -39,6 +42,7 @@ namespace Models.Logic
             this.ssl = ssl;
             this.login = login;
             this.password = password;
+            this.clientSecret = "3tIIhaadXBvPHmPG__PdrWTj";
         }
 
         public IEnumerable<string> GetUnreadMails()
@@ -75,9 +79,9 @@ namespace Models.Logic
             return messages;
         }
 
-        public IEnumerable<string> GetAllMails()
+        public IEnumerable<MailModel> GetAllMails()
         {
-            var messages = new List<string>();
+            var mails = new List<MailModel>();
 
             using (var client = new ImapClient())
             {
@@ -92,12 +96,19 @@ namespace Models.Logic
                 // The Inbox folder is always available on all IMAP servers...
                 var inbox = client.Inbox;
                 inbox.Open(FolderAccess.ReadOnly);
-                var results = inbox.Search(SearchOptions.All, SearchQuery.NotSeen);
+                var results = inbox.Search(SearchOptions.All, SearchQuery.All);
                 foreach (var uniqueId in results.UniqueIds)
                 {
-                    var message = inbox.GetMessage(uniqueId);
+                    var mail = new MailModel();
 
-                    messages.Add(message.HtmlBody);
+                    MimeMessage t = inbox.GetMessage(uniqueId);
+
+                    mail.Message = t.HtmlBody;
+                    mail.Subject = t.Subject;
+                    mail.Sender = t.From.Mailboxes.First().Address;
+                    mail.Date = t.Date.DateTime;
+                    
+                    mails.Add(mail);
 
                     //Mark message as read
                     //inbox.AddFlags(uniqueId, MessageFlags.Seen, true);
@@ -106,7 +117,7 @@ namespace Models.Logic
                 client.Disconnect(true);
             }
 
-            return messages;
+            return mails;
         }
 
         public void SendEmail(MailModel email)

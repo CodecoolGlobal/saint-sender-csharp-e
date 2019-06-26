@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Models.Models
+namespace SaintSender.Backend.Models
 {
     public class MailModel
     {
