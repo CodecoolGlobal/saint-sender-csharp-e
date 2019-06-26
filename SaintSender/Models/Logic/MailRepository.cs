@@ -1,15 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using System.Threading;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Gmail.v1;
+using Google.Apis.Gmail.v1.Data;
+using Google.Apis.Services;
+using Google.Apis.Util.Store;
 using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Search;
 using Models.Models;
+using static Google.Apis.Gmail.v1.GmailService;
 
 namespace Models.Logic
 {
     public class MailRepository
     {
-        private readonly string mailServer, login, password;
+        private readonly string mailServer, login, password, clientSecret;
         private readonly int port;
         private readonly bool ssl;
 
@@ -18,6 +27,7 @@ namespace Models.Logic
             this.mailServer = "imap.gmail.com";
             this.login = "sunyibela@gmail.com";
             this.password = "6HcZbP9Zh439D4n";
+            this.clientSecret = "3tIIhaadXBvPHmPG__PdrWTj";
             this.port = 993;
             this.ssl = true;
         }
@@ -116,22 +126,37 @@ namespace Models.Logic
 
             var mimeMessage = MimeKit.MimeMessage.CreateFromMailMessage(mailMessage);
 
-            var gmailMessage = new Google.Apis.Gmail.v1.Data.Message
+            Message message = new Message();
+            message.Raw = Encode(mimeMessage.ToString());
+            UserCredential credential;
+
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(clientSecret)))
             {
-                Raw = Encode(mimeMessage.ToString())
-            };
+                string credPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), @".credentials\gmail-dotnet-quickstart.json");
+                credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
+                    GoogleClientSecrets.Load(stream).Secrets,
+                    new string[] { Scope.GmailSend },
+                    "sunyibela@gmail.com",
+                    CancellationToken.None,
+                    new FileDataStore(credPath, true)).Result;
+            }
 
-            var service = new Gmail();
-            Google.Apis.Gmail.v1.UsersResource.MessagesResource.SendRequest request = service.Users.Messages.Send(gmailMessage, ServiceEmail);
-
+            var service = new GmailService(new BaseClientService.Initializer()
+            {
+                HttpClientInitializer = credential,
+                ApplicationName = "SaintSender"
+            });
+            
+            
+            var request = service.Users.Messages.Send(message, mimeMessage.To.ToString());
             request.Execute();
         }
 
         public static string Encode(string text)
         {
-            byte[] bytes = System.Text.Encoding.UTF8.GetBytes(text);
+            byte[] bytes = Encoding.UTF8.GetBytes(text);
 
-            return System.Convert.ToBase64String(bytes)
+            return Convert.ToBase64String(bytes)
                 .Replace('+', '-')
                 .Replace('/', '_')
                 .Replace("=", "");
