@@ -16,7 +16,6 @@ namespace SaintSender.UI.Views
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private MailModel _selectedMail = new MailModel();
-        private MailRepository _repository;
         private LoginConfig _loginConfigWindow;
 
         public ICommand ChangeSelectedMailCommand { get; set; }
@@ -55,7 +54,7 @@ namespace SaintSender.UI.Views
 
         public void SaveMailsToStorage(object o)
         {
-            MailAddress address = new MailAddress(_repository.login);
+            MailAddress address = new MailAddress(Repository.login);
             string name = address.User;
             foreach (var item in Mails)
             {
@@ -72,7 +71,7 @@ namespace SaintSender.UI.Views
             try
             {
                 Mails.Clear();
-                MailAddress address = new MailAddress(_repository.login);
+                MailAddress address = new MailAddress(Repository.login);
                 string name = address.User;
                 foreach (var item in MailStorage.LoadMails(name))
                 {
@@ -112,7 +111,7 @@ namespace SaintSender.UI.Views
         public void RefreshMails(object o)
         {
             Mails.Clear();
-            foreach (var item in _repository.GetAllMails())
+            foreach (var item in Repository.GetAllMails())
             {
                 Mails.Add(item);
             }
@@ -131,6 +130,10 @@ namespace SaintSender.UI.Views
             // Initialize login config window
             Config = ConfigHandler.Load();
             _loginConfigWindow = GetLoginConfig();
+
+            // Debug
+#warning debug repo, remove once login fixed
+            Repository = new MailRepository();
 
             // Setup commands
             SignInCommand = new RelayCommand(ShowSignInWindow);
