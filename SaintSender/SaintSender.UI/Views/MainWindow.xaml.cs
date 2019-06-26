@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Mail;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
@@ -39,6 +40,11 @@ namespace SaintSender.UI.Views
                 OnPropertyChanged();
             }
         }
+
+        /// <summary>
+        /// Gets and sets whether the application is running in offline mode
+        /// </summary>
+        public bool OfflineMode { get; set; } = true;
 
         public ICommand SignInCommand { get; set; }
 
@@ -165,7 +171,6 @@ namespace SaintSender.UI.Views
 #warning debug repo, remove once login fixed
             Repository = new MailRepository();
             SelectedMailList = Mails;
-            Console.WriteLine(CheckForInternetConnection());
 
             // Setup commands
             SignInCommand = new RelayCommand(ShowSignInWindow);
@@ -177,11 +182,19 @@ namespace SaintSender.UI.Views
                 Search(obj.ToString());
                 SelectedMailList = SearchResults;
             }, (obj) => obj.ToString().Length > 3);
+
+            // Check for internet connection
+            Task.Run(() => CheckConnection());
         }
 
         private LoginConfig GetLoginConfig()
         {
             return new LoginConfig(Config, Repository);
+        }
+
+        private void CheckConnection()
+        {
+            OfflineMode = !CheckForInternetConnection();
         }
 
         /// <summary>
