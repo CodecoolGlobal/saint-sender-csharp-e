@@ -11,9 +11,11 @@
         <Style x:Key="globalBackground" TargetType="Grid">
             <Setter Property = "Background" Value = "#666666" />
         </Style>
-        <Style x:Key="greyTextBlock" TargetType="TextBlock">
+        <Style x:Key="greyTextBlock" TargetType="TextBox">
             <Setter Property = "Foreground" Value = "WhiteSmoke" />
-            <Setter Property = "Background" Value = "#666666" />
+            <Setter Property = "Background" Value = "Transparent" />
+            <Setter Property = "BorderThickness" Value = "0" />
+            <Setter Property = "IsReadOnly" Value = "True" />
             <Setter Property = "FontSize" Value = "12" />
             <Setter Property = "Margin" Value = "10" />
         </Style>
@@ -27,22 +29,22 @@
             <RowDefinition Height="5"/>
             <RowDefinition Height="40"/>
             <RowDefinition Height="5"/>
-            <RowDefinition Height="356*"/>
+            <RowDefinition Height="10*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="130*"/>
+            <ColumnDefinition Width="120"/>
             <ColumnDefinition Width="6"/>
-            <ColumnDefinition Width="250*"/>
+            <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <TextBlock Text="{Binding Path=SelectedMail.Subject}" Grid.ColumnSpan="3" Style="{StaticResource greyTextBlock}"/>
+        <TextBox Text="{Binding Path=SelectedMail.Subject}" Grid.ColumnSpan="3" Style="{StaticResource greyTextBlock}"/>
         <StackPanel Grid.ColumnSpan="3" Grid.Row="1" Orientation="Vertical">
             <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
         </StackPanel>
-        <TextBlock Text="{Binding Path=SelectedMail.Date}" Grid.Row="2" Style="{StaticResource greyTextBlock}"/>
+        <TextBox Text="{Binding Path=SelectedMail.Date, StringFormat={}{0:yyyy/MM/dd}}" Grid.Row="2" Style="{StaticResource greyTextBlock}"/>
         <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal">
             <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
         </StackPanel>
-        <TextBlock Text="{Binding Path=SelectedMail.Sender}" Grid.Row="2" Grid.Column="2" Style="{StaticResource greyTextBlock}"/>
+        <TextBox Text="{Binding Path=SelectedMail.Sender}" Grid.Row="2" Grid.Column="2" Style="{StaticResource greyTextBlock}"/>
         <StackPanel Grid.Row="3" Grid.ColumnSpan="3" Orientation="Vertical">
             <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
         </StackPanel>

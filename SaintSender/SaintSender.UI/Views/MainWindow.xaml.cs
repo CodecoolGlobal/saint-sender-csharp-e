@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Mail;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -22,6 +23,7 @@ namespace SaintSender.UI.Views
     {
         private MailModel _selectedMail = new MailModel();
         private LoginConfig _loginConfigWindow;
+        private ObservableCollection<MailModel> selectedMailList;
         private MailRepository _repository;
 
         public MainWindow()
@@ -46,15 +48,30 @@ namespace SaintSender.UI.Views
             SaveMailsToStorageCommand = new RelayCommand(SaveMailsToStorage);
             LoadMailsFromStorageCommand = new RelayCommand(LoadMailsFromStorage);
             LoadMailsFromServerCommand = new RelayCommand(LoadMailsFromServer);
+            SearchCommand = new RelayCommand((obj) =>
+            {
+                Search(obj.ToString());
+                SelectedMailList = SearchResults;
+            }, (obj) => obj.ToString().Length > 3);
         }
         #region ICommands
         public ICommand SaveMailsToStorageCommand { get; set; }
         public ICommand LoadMailsFromStorageCommand { get; set; }
         public ICommand LoadMailsFromServerCommand { get; set; }
+        public ICommand SearchCommand { get; set; }
         #endregion
 
         #region Properties
         public ObservableCollection<MailModel> Mails { get; set; } = new ObservableCollection<MailModel>();
+        public ObservableCollection<MailModel> SearchResults { get; set; } = new ObservableCollection<MailModel>();
+        public ObservableCollection<MailModel> SelectedMailList
+        {
+            get => selectedMailList; set
+            {
+                selectedMailList = value;
+                OnPropertyChanged();
+            }
+        }
 
         public ICommand SignInCommand { get; set; }
 
@@ -196,6 +213,22 @@ namespace SaintSender.UI.Views
                     Mails.Add(item);
                 }
             }
+        }
+
+        private void Search(string phrase)
+        {
+            var foundEmails = new ObservableCollection<MailModel>();
+            var reg = new Regex(phrase);
+            foreach (var email in Mails)
+            {
+                if (reg.IsMatch(email.Message) || reg.IsMatch(email.Subject) || reg.IsMatch(email.Sender))
+                {
+                    foundEmails.Add(email);
+                }
+            }
+
+            SearchResults = foundEmails;
+            SelectedMailList = SearchResults;
         }
     }
 }

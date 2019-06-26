@@ -5,11 +5,16 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:SaintSender.UI.Views"
              mc:Ignorable="d" 
-             d:DesignHeight="30" d:DesignWidth="600">
+             d:DesignHeight="30" d:DesignWidth="1200">
     <StackPanel Orientation="Horizontal" d:DataContext="{d:DesignInstance Type=local:MainWindow}">
         <Button Width="70" Background="#006600" Foreground="#DDDDDD" Command="{Binding SignInCommand}">Login</Button>
+        <Button Width="70" IsEnabled="False">Send</Button>
         <Button Width="70" Command="{Binding LoadMailsFromServerCommand}">Refresh</Button>
         <Button Width="70" Command="{Binding SaveMailsToStorageCommand}">Store</Button>
-        <Button Width="150" Background="#4d0000" Foreground="#DDDDDD" Command="{Binding LoadMailsFromStorageCommand}">[Debug]Restore</Button>
+        <Button Width="70" Background="#4d0000" Foreground="#DDDDDD" Command="{Binding LoadMailsFromStorageCommand}">Restore</Button>
+        <TextBox x:Name="SearchBox" Width="200"></TextBox>
+        <Button Width="70" Command="{Binding SearchCommand}" CommandParameter="{Binding Text, ElementName=SearchBox}" IsDefault="{Binding IsFocused, ElementName=SearchBox}">Search</Button>
+        <Label Width="100" VerticalAlignment="Stretch" IsEnabled="False" BorderThickness="1" BorderBrush="#666666" Visibility="Visible"
+               Background="DarkRed" Foreground="#DDDDDD" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">Offline Mode</Label>
     </StackPanel>
 </UserControl>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 
@@ -20,7 +21,7 @@ namespace SaintSender.Backend.Models
             List<MailModel> mails = new List<MailModel>();
             try
             {
-                var files = Directory.GetFiles(path + $@"/mails/{user}");
+                var files = Directory.GetFiles(path + $@"/mails/{user}").Reverse();
                 foreach (var file in files)
                 {
                     using (FileStream fileStream = File.Open(file, FileMode.Open))
