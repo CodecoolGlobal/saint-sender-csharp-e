@@ -1,7 +1,4 @@
-﻿using SaintSender.Backend.Logic;
-using System;
-using System.Linq;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 
 namespace SaintSender.UI.Views
 {
@@ -13,8 +10,6 @@ namespace SaintSender.UI.Views
         public ReadMailView()
         {
             InitializeComponent();
-
-            //browserMessageDisplay.NavigateToString(((MainWindow) DataContext).SelectedMail.Message);
         }
     }
 }
