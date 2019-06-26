@@ -23,6 +23,7 @@ namespace SaintSender.UI.Views
         public ICommand SaveMailsToStorageCommand { get; set; }
         public ICommand LoadMailsFromStorageCommand { get; set; }
         public ICommand LoadMailsFromServerCommand { get; set; }
+        public ICommand SearchCommand { get; set; }
         #endregion
 
         #region Properties
@@ -158,6 +159,7 @@ namespace SaintSender.UI.Views
             SaveMailsToStorageCommand = new RelayCommand(SaveMailsToStorage);
             LoadMailsFromStorageCommand = new RelayCommand(LoadMailsFromStorage);
             LoadMailsFromServerCommand = new RelayCommand(LoadMailsFromServer);
+            SearchCommand = new RelayCommand((obj) => Search(obj.ToString()));
         }
 
         private LoginConfig GetLoginConfig()
@@ -183,6 +185,19 @@ namespace SaintSender.UI.Views
             {
                 return false;
             }
+        }
+
+        private void Search(string phrase)
+        {
+            var foundEmails = new ObservableCollection<MailModel>();
+            foreach (var email in Mails)
+            {
+                if (email.Message.Contains(phrase) || email.Subject.Contains(phrase) || email.Sender.Contains(phrase))
+                {
+                    foundEmails.Add(email);
+                }
+            }
+            Mails = foundEmails;
         }
     }
 }
