@@ -16,6 +16,8 @@ namespace SaintSender.UI.Views
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private MailModel _selectedMail = new MailModel();
+        private MailRepository _repository;
+        private LoginConfig _loginConfigWindow;
 
         public ICommand ChangeSelectedMailCommand { get; set; }
 
@@ -25,9 +27,14 @@ namespace SaintSender.UI.Views
 
         public ConfigHandler Config { get; set; }
 
-        public MailRepository Repository { get; set; }
-
-        private LoginConfig _loginConfigWindow;
+        public MailRepository Repository
+        {
+            get => _repository; set
+            {
+                _repository = value;
+                _repository.GetAllMails();
+            }
+        }
 
         public MailModel SelectedMail
         {
