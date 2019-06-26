@@ -2,10 +2,12 @@
 using SaintSender.Backend.Models;
 using SaintSender.UI.Utils;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -36,7 +38,7 @@ namespace SaintSender.UI.Views
             Repository.CheckCredentials();
 
             MailRefreshTimer.Interval = new TimeSpan(0, 0, 5);
-            MailRefreshTimer.Tick += (obj, args) => RefreshMailList();
+            MailRefreshTimer.Tick += (obj, args) => RefreshMailListAsync();
             MailRefreshTimer.Start();
 
             // Setup commands
@@ -55,7 +57,7 @@ namespace SaintSender.UI.Views
             set
             {
                 _repository = value;
-                RefreshMailList();
+                RefreshMailListAsync();
             }
         }
 
@@ -82,12 +84,13 @@ namespace SaintSender.UI.Views
             Environment.Exit(0);
         }
 
-        public void Debug()
+        public async Task Debug()
         {
 
             MailRepository mailRepo = new MailRepository();
             Mails.Clear();
-            foreach (var item in mailRepo.GetAllMails())
+            var items = await Task<IEnumerable<MailModel>>.Factory.StartNew(mailRepo.GetAllMails);
+            foreach (var item in items)
             {
                 Mails.Add(item);
             }
@@ -107,9 +110,10 @@ namespace SaintSender.UI.Views
             return new LoginConfig(Config, Repository);
         }
 
-        private void RefreshMailList()
+        private async Task RefreshMailListAsync()
         {
-            foreach (var item in Repository.GetAllMails())
+            IEnumerable<MailModel> mails = await Task< IEnumerable < MailModel >>.Factory.StartNew(Repository.GetAllMails);
+            foreach (var item in mails)
             {
                 if (!Mails.Contains(item))
                 {
