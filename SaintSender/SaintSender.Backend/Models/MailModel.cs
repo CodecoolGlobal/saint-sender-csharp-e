@@ -26,6 +26,7 @@ namespace SaintSender.Backend.Models
         /// <summary>
         /// Gets and sets when the email was sent
         /// </summary>
+        public string Receiver { get; set; }
         public DateTime Date { get; set; }
 
         /// <summary>

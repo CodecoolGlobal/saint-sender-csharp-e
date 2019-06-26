@@ -1,9 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Search;
 using MimeKit;
+using System;
+using System.Net.Mail;
+using System.Net;
 
 namespace SaintSender.Backend.Models
 {
@@ -95,6 +99,43 @@ namespace SaintSender.Backend.Models
             }
 
             return mails;
+        }
+
+        public void SendEmail(MailModel email)
+        {
+            var fromAddress = new MailAddress(login, login.Split('@')[0]);
+            var toAddress = new MailAddress(email.Receiver, email.Receiver.Split('@')[0]);
+            string fromPassword = password;
+            string subject = email.Subject;
+            string body = email.Message;
+
+            var smtp = new SmtpClient
+            {
+                Host = "smtp.gmail.com",
+                Port = 587,
+                EnableSsl = true,
+                DeliveryMethod = SmtpDeliveryMethod.Network,
+                Credentials = new NetworkCredential(fromAddress.Address, fromPassword),
+                Timeout = 20000
+            };
+            using (var message = new MailMessage(fromAddress, toAddress)
+            {
+                Subject = subject,
+                Body = body
+            })
+            {
+                smtp.Send(message);
+            }
+        }
+
+        public static string Encode(string text)
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(text);
+
+            return Convert.ToBase64String(bytes)
+                .Replace('+', '-')
+                .Replace('/', '_')
+                .Replace("=", "");
         }
     }
 }
