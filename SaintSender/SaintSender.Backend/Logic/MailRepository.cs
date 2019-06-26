@@ -98,7 +98,7 @@ namespace SaintSender.Backend.Logic
                     mail.Subject = t.Subject;
                     mail.Sender = t.From.Mailboxes.First().Address;
                     mail.Date = t.Date.DateTime;
-
+                    
                     mails.Add(mail);
 
                     //Mark message as read
