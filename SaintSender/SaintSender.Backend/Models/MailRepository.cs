@@ -53,7 +53,7 @@ namespace SaintSender.Backend.Models
         }
 
         /// <summary>
-        /// Gets all mail as an enumerable collection of MailModel
+        /// Gets all email as an enumerable collection of MailModel
         /// </summary>
         /// <returns>Enumerable collection of MailModels</returns>
         public IEnumerable<MailModel> GetAllMails()
@@ -73,8 +73,53 @@ namespace SaintSender.Backend.Models
                 // The Inbox folder is always available on all IMAP servers...
                 var inbox = client.Inbox;
                 inbox.Open(FolderAccess.ReadOnly);
-                var results = inbox.Search(SearchOptions.All, SearchQuery.All);
-                foreach (var uniqueId in results.UniqueIds)
+                var results = inbox.Search(SearchQuery.All).Reverse();
+                foreach (var uniqueId in results)
+                {
+                    var mail = new MailModel();
+
+                    MimeMessage t = inbox.GetMessage(uniqueId);
+
+                    mail.Message = t.HtmlBody;
+                    mail.Subject = t.Subject;
+                    mail.Sender = t.From.Mailboxes.First().Address;
+                    mail.Date = t.Date.DateTime;
+                    
+                    mails.Add(mail);
+
+                    //Mark message as read
+                    //inbox.AddFlags(uniqueId, MessageFlags.Seen, true);
+                }
+
+                client.Disconnect(true);
+            }
+
+            return mails;
+        }
+
+        /// <summary>
+        /// Gets latest 10 email as an enumerable collection of MailModel
+        /// </summary>
+        /// <returns>Enumerable collection of MailModels</returns>
+        public IEnumerable<MailModel> GetLast10Mails()
+        {
+            var mails = new List<MailModel>();
+
+            using (var client = new ImapClient())
+            {
+                client.Connect(mailServer, port, ssl);
+
+                // Note: since we don't have an OAuth2 token, disable
+                // the XOAUTH2 authentication mechanism.
+                client.AuthenticationMechanisms.Remove("XOAUTH2");
+
+                client.Authenticate(login, password);
+
+                // The Inbox folder is always available on all IMAP servers...
+                var inbox = client.Inbox;
+                inbox.Open(FolderAccess.ReadOnly);
+                var results = inbox.Search(SearchQuery.All).Reverse().Take(10);
+                foreach (var uniqueId in results)
                 {
                     var mail = new MailModel();
 

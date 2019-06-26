@@ -10,7 +10,8 @@
         Title="MainWindow" Height="720" Width="1280">
     <Grid Background="#666666">
         <Grid.RowDefinitions>
-            <RowDefinition Height="30"/>
+            <RowDefinition Height="33"/>
+            <RowDefinition Height="5"/>
             <RowDefinition Height="400*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -18,11 +19,14 @@
             <ColumnDefinition Width="5"/>
             <ColumnDefinition Width="150*"/>
         </Grid.ColumnDefinitions>
-        <views:ButtonMenu Grid.ColumnSpan="3"/>
-        <views:InboxView Grid.Row="1" Grid.RowSpan="2" Margin="5,0,0,5"/>
-        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
+        <views:ButtonMenu Grid.ColumnSpan="3" Margin="5,2,0,0"/>
+        <StackPanel Grid.Row="1" Grid.ColumnSpan="3" Orientation="Vertical">
             <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
         </StackPanel>
-        <views:ReadMailView Grid.Row="1" Grid.Column="2" Grid.RowSpan="2" Margin="0,0,5,5"/>
+        <views:InboxView Grid.Row="2" Margin="5,0,0,5"/>
+        <StackPanel Grid.Row="1" Grid.RowSpan="2" Grid.Column="1" Orientation="Horizontal">
+            <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
+        </StackPanel>
+        <views:ReadMailView Grid.Row="2" Grid.Column="2" Margin="0,0,5,5"/>
     </Grid>
 </Window>
