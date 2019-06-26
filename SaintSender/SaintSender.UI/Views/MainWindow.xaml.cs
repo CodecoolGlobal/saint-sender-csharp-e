@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace SaintSender.UI.Views
 {
@@ -32,6 +33,10 @@ namespace SaintSender.UI.Views
 
             _repository = new MailRepository(Config.Address, Config.Password);
 
+            MailRefreshTimer.Interval = new TimeSpan(0, 0, 5);
+            MailRefreshTimer.Tick += (obj, args) => RefreshMailList();
+            MailRefreshTimer.Start();
+
             // Setup commands
             SignInCommand = new RelayCommand(ShowSignInWindow);
             ChangeSelectedMailCommand = new RelayCommand(ChangeSelectedMail);
@@ -47,10 +52,11 @@ namespace SaintSender.UI.Views
 
         public MailRepository Repository
         {
-            get => _repository; set
+            get => _repository;
+            set
             {
                 _repository = value;
-                _repository.GetAllMails();
+                RefreshMailList();
             }
         }
 
@@ -62,6 +68,8 @@ namespace SaintSender.UI.Views
                 OnPropertyChanged();
             }
         }
+
+        public DispatcherTimer MailRefreshTimer { get; private set; } = new DispatcherTimer();
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -84,6 +92,7 @@ namespace SaintSender.UI.Views
         {
 
             MailRepository mailRepo = new MailRepository();
+            Mails.Clear();
             foreach (var item in mailRepo.GetAllMails())
             {
                 Mails.Add(item);
@@ -102,6 +111,16 @@ namespace SaintSender.UI.Views
         private LoginConfig GetLoginConfig()
         {
             return new LoginConfig(Config, Repository);
+        }
+
+        private void RefreshMailList()
+        {
+            Mails.Clear();
+            foreach (var item in Repository.GetAllMails())
+            {
+                Mails.Add(item);
+            }
+            MessageBox.Show("refreshing mails");
         }
     }
 }
