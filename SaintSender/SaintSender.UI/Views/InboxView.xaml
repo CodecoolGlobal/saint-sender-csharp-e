@@ -35,7 +35,7 @@
                         <RowDefinition Height="50*"/>
                     </Grid.RowDefinitions>
                     <TextBlock Grid.ColumnSpan="2" Text="{Binding Path=Subject}" Style="{StaticResource greyTextBlock}" />
-                    <TextBlock Grid.Row="1" Text="{Binding Path=Date}" Style="{StaticResource greyTextBlock}" />
+                    <TextBlock Grid.Row="1" Text="{Binding Path=Date, StringFormat={}{0:yyyy/MM/dd}}" Style="{StaticResource greyTextBlock}" />
                     <TextBlock Margin="10,0,0,0" Grid.Row="1" Grid.Column="1" Text="{Binding Path=Sender}" Style="{StaticResource greyTextBlock}" />
                 </Grid>
             </DataTemplate>
