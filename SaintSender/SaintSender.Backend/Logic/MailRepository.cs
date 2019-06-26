@@ -13,6 +13,10 @@ using MailKit.Net.Imap;
 using MailKit.Search;
 using MimeKit;
 using SaintSender.Backend.Models;
+using System;
+using static Google.Apis.Gmail.v1.GmailService;
+using System.Net.Mail;
+using System.Net;
 
 namespace SaintSender.Backend.Logic
 {
@@ -27,22 +31,22 @@ namespace SaintSender.Backend.Logic
         {
             this.login = "sunyibela@gmail.com";
             this.password = "6HcZbP9Zh439D4n";
+            this.clientSecret = "3tIIhaadXBvPHmPG__PdrWTj";
         }
 
-        public MailRepository(string login, string password)
+        public MailRepository(string login, string password) : this()
         {
             this.login = login;
             this.password = password;
         }
 
-        public MailRepository(string mailServer, int port, bool ssl, string login, string password)
+        public MailRepository(string mailServer, int port, bool ssl, string login, string password) : this()
         {
             this.mailServer = mailServer;
             this.port = port;
             this.ssl = ssl;
             this.login = login;
             this.password = password;
-            this.clientSecret = "3tIIhaadXBvPHmPG__PdrWTj";
         }
 
         public IEnumerable<string> GetUnreadMails()
@@ -122,45 +126,29 @@ namespace SaintSender.Backend.Logic
 
         public void SendEmail(MailModel email)
         {
-            var mailMessage = new System.Net.Mail.MailMessage();
-            mailMessage.From = new System.Net.Mail.MailAddress(email.Sender);
-            mailMessage.To.Add(email.GetReceiversString());
-            mailMessage.ReplyToList.Add(email.GetReceiversString());
-            mailMessage.Subject = email.Subject;
-            mailMessage.Body = email.Message;
-            mailMessage.IsBodyHtml = false;
+            var fromAddress = new MailAddress(login, login.Split('@')[0]);
+            var toAddress = new MailAddress(email.Receiver, email.Receiver.Split('@')[0]);
+            string fromPassword = password;
+            string subject = email.Subject;
+            string body = email.Message;
 
-            foreach (System.Net.Mail.Attachment attachment in email.Attachments)
+            var smtp = new SmtpClient
             {
-                mailMessage.Attachments.Add(attachment);
+                Host = "smtp.gmail.com",
+                Port = 587,
+                EnableSsl = true,
+                DeliveryMethod = SmtpDeliveryMethod.Network,
+                Credentials = new NetworkCredential(fromAddress.Address, fromPassword),
+                Timeout = 20000
+            };
+            using (var message = new MailMessage(fromAddress, toAddress)
+            {
+                Subject = subject,
+                Body = body
+            })
+            {
+                smtp.Send(message);
             }
-
-            var mimeMessage = MimeKit.MimeMessage.CreateFromMailMessage(mailMessage);
-
-            Message message = new Message();
-            message.Raw = Encode(mimeMessage.ToString());
-            UserCredential credential;
-
-            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(clientSecret)))
-            {
-                string credPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), @".credentials\gmail-dotnet-quickstart.json");
-                credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
-                    GoogleClientSecrets.Load(stream).Secrets,
-                    new string[] { Scope.GmailSend },
-                    "sunyibela@gmail.com",
-                    CancellationToken.None,
-                    new FileDataStore(credPath, true)).Result;
-            }
-
-            var service = new GmailService(new BaseClientService.Initializer()
-            {
-                HttpClientInitializer = credential,
-                ApplicationName = "SaintSender"
-            });
-            
-            
-            var request = service.Users.Messages.Send(message, mimeMessage.To.ToString());
-            request.Execute();
         }
 
         public static string Encode(string text)

@@ -72,6 +72,9 @@ namespace SaintSender.UI.Views
             // Setup commands
             SignInCommand = new RelayCommand(ShowSignInWindow);
             ChangeSelectedMailCommand = new RelayCommand(ChangeSelectedMail);
+
+            var sew = new SendEmailWindow();
+            sew.Show();
         }
 
         private void MainWindow_Unloaded(object sender, RoutedEventArgs e)

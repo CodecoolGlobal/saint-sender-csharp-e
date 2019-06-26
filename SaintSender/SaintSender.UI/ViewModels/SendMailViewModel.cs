@@ -1,13 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SaintSender.Backend.Models;
 
 namespace SaintSender.UI.ViewModels
 {
-    class SendMailViewModel : ViewModelBase
+    public class SendMailViewModel : ViewModelBase
     {
+        public MailModel Email { get; } = new MailModel();
+        public string Message
+        {
+            get => Email.Message; set
+            {
+                Email.Message = value;
+                OnPropertyChanged();
+            }
+        }
 
+        public string Receiver
+        {
+            get => Email.Receiver; set
+            {
+                Email.Receiver = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string Subject
+        {
+            get => Email.Subject; set
+            {
+                Email.Subject = value;
+                OnPropertyChanged();
+            }
+        }
     }
 }
