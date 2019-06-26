@@ -14,6 +14,7 @@ namespace SaintSender.Backend.Logic
         private readonly string mailServer = "imap.gmail.com";
         private readonly int port = 993;
         private readonly bool ssl = true;
+        public bool IsLoginCredentialCorrect { get; set; } = false;
 
         public MailRepository()
         {
@@ -36,9 +37,36 @@ namespace SaintSender.Backend.Logic
             this.password = password;
         }
 
-        public IEnumerable<string> GetUnreadMails()
+        public bool AreCredentialsCorrect
         {
-            var messages = new List<string>();
+            get
+            {
+                bool correctLogin;
+                using (var client = new ImapClient())
+                {
+                    client.Connect(mailServer, port, ssl);
+
+                    // Note: since we don't have an OAuth2 token, disable
+                    // the XOAUTH2 authentication mechanism.
+                    client.AuthenticationMechanisms.Remove("XOAUTH2");
+
+                    try
+                    {
+                        client.Authenticate(login, password);
+                        correctLogin = true;
+                    }
+                    catch (ServiceNotAuthenticatedException)
+                    {
+                        correctLogin = false;
+                    }
+                }
+                return correctLogin;
+            }
+        }
+
+        public IEnumerable<MailModel> GetUnreadMails()
+        {
+            var mails = new List<MailModel>();
 
             using (var client = new ImapClient())
             {
@@ -48,26 +76,38 @@ namespace SaintSender.Backend.Logic
                 // the XOAUTH2 authentication mechanism.
                 client.AuthenticationMechanisms.Remove("XOAUTH2");
 
-                client.Authenticate(login, password);
-
-                // The Inbox folder is always available on all IMAP servers...
-                var inbox = client.Inbox;
-                inbox.Open(FolderAccess.ReadOnly);
-                var results = inbox.Search(SearchOptions.All, SearchQuery.Not(SearchQuery.Seen));
-                foreach (var uniqueId in results.UniqueIds)
+                try
                 {
-                    var message = inbox.GetMessage(uniqueId);
+                    client.Authenticate(login, password);
 
-                    messages.Add(message.HtmlBody);
+                    // The Inbox folder is always available on all IMAP servers...
+                    var inbox = client.Inbox;
+                    inbox.Open(FolderAccess.ReadOnly);
+                    var results = inbox.Search(SearchOptions.All, SearchQuery.Not(SearchQuery.Seen));
+                    foreach (var uniqueId in results.UniqueIds)
+                    {
+                        MimeMessage t = inbox.GetMessage(uniqueId);
 
-                    //Mark message as read
-                    //inbox.AddFlags(uniqueId, MessageFlags.Seen, true);
+                        var mail = new MailModel(t);
+
+                        mails.Add(mail);
+
+                        //Mark message as read
+                        //inbox.AddFlags(uniqueId, MessageFlags.Seen, true);
+                    }
+                }
+                catch
+                {
+
+                }
+                finally
+                {
+                    client.Disconnect(true);
                 }
 
-                client.Disconnect(true);
             }
 
-            return messages;
+            return mails;
         }
 
         public IEnumerable<MailModel> GetAllMails()
@@ -90,15 +130,10 @@ namespace SaintSender.Backend.Logic
                 var results = inbox.Search(SearchOptions.All, SearchQuery.All);
                 foreach (var uniqueId in results.UniqueIds)
                 {
-                    var mail = new MailModel();
-
                     MimeMessage t = inbox.GetMessage(uniqueId);
 
-                    mail.Message = t.HtmlBody;
-                    mail.Subject = t.Subject;
-                    mail.Sender = t.From.Mailboxes.First().Address;
-                    mail.Date = t.Date.DateTime;
-                    
+                    var mail = new MailModel(t);
+
                     mails.Add(mail);
 
                     //Mark message as read

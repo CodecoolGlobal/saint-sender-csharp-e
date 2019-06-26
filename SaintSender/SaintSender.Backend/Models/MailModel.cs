@@ -1,4 +1,6 @@
-﻿using System;
+﻿using MimeKit;
+using System;
+using System.Linq;
 
 namespace SaintSender.Backend.Models
 {
@@ -18,6 +20,14 @@ namespace SaintSender.Backend.Models
             Message = message;
             Sender = sender;
             Date = date;
+        }
+
+        public MailModel(MimeMessage mimeMessage)
+        {
+            Message = mimeMessage.HtmlBody;
+            Subject = mimeMessage.Subject;
+            Sender = mimeMessage.From.Mailboxes.First().Address;
+            Date = mimeMessage.Date.DateTime;
         }
     }
 }
