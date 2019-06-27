@@ -225,15 +225,21 @@ namespace SaintSender.UI.Views
 
         private void Search(object obj)
         {
+            // Convert command arg to string
             var phrase = obj.ToString();
+
+            // If it is empty string reset the inbox view to display all messages
             if (phrase.Length == 0)
             {
                 SelectedMailList = Mails;
                 return;
             }
 
+            // Create new ObservableCollection that is to be populated with emails that match with given regex
             var foundEmails = new ObservableCollection<MailModel>();
             var reg = new Regex(phrase);
+
+            // Choose the emails whose properties match the regex.
             foreach (var email in Mails)
             {
                 if (reg.IsMatch(email.Message) || reg.IsMatch(email.Subject) || reg.IsMatch(email.Sender))
@@ -242,6 +248,7 @@ namespace SaintSender.UI.Views
                 }
             }
 
+            // Set the email list that is to be displayed in InboxView
             SearchResults = foundEmails;
             SelectedMailList = SearchResults;
         }
@@ -311,22 +318,6 @@ namespace SaintSender.UI.Views
                 OfflineMode = true;
             }
             IsRefreshing = false;
-        }
-
-        private void Search(string phrase)
-        {
-            var foundEmails = new ObservableCollection<MailModel>();
-            var reg = new Regex(phrase);
-            foreach (var email in Mails)
-            {
-                if (reg.IsMatch(email.Message) || reg.IsMatch(email.Subject) || reg.IsMatch(email.Sender))
-                {
-                    foundEmails.Add(email);
-                }
-            }
-
-            SearchResults = foundEmails;
-            SelectedMailList = SearchResults;
         }
     }
 }
