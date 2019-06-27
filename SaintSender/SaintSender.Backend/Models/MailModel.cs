@@ -70,6 +70,15 @@ namespace SaintSender.Backend.Models
             ID = id;
         }
 
+        public MailModel(MailModel model)
+        {
+            Message = model.Message;
+            Subject = model.Subject;
+            Sender = model.Sender;
+            Date = model.Date;
+            ID = model.ID;
+        }
+
         public override bool Equals(object other)
         {
             if (!(other is MailModel))
@@ -111,6 +120,11 @@ namespace SaintSender.Backend.Models
                 IFormatter formatter = new BinaryFormatter();
                 formatter.Serialize(fileStream, this);
             }
+        }
+
+        public MailModel Copy()
+        {
+            return new MailModel(this);
         }
     }
 }

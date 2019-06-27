@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Net;
 using System.Net.Mail;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -50,6 +51,9 @@ namespace SaintSender.UI.Views
             LoadMailsFromServerCommand = new RelayCommand(LoadMailsFromServer);
             SearchCommand = new RelayCommand((obj) => Search(obj), (obj) => obj.ToString().Length > 3 || obj.ToString().Length == 0);
             ShowSendEmailWindowCommand = new RelayCommand(ShowSendEmailWindow);
+
+            // Check for internet connection
+            Task.Run(() => CheckConnection());
         }
 
         #region ICommands
@@ -63,6 +67,7 @@ namespace SaintSender.UI.Views
 
         #region Properties
         public ObservableCollection<MailModel> Mails { get; set; } = new ObservableCollection<MailModel>();
+        public ObservableCollection<MailModel> OfflineMails { get; set; } = new ObservableCollection<MailModel>();
         public ObservableCollection<MailModel> SearchResults { get; set; } = new ObservableCollection<MailModel>();
         public ObservableCollection<MailModel> SelectedMailList
         {
@@ -72,6 +77,11 @@ namespace SaintSender.UI.Views
                 OnPropertyChanged();
             }
         }
+
+        /// <summary>
+        /// Gets and sets whether the application is running in offline mode
+        /// </summary>
+        public bool OfflineMode { get; set; } = true;
 
         public ICommand SignInCommand { get; set; }
 
@@ -91,11 +101,13 @@ namespace SaintSender.UI.Views
         {
             get => _selectedMail; set
             {
-                _selectedMail = value;
-                OnPropertyChanged();
+                if(value != null)
+                {
+                    _selectedMail = value.Copy();
+                    OnPropertyChanged();
+                }
             }
         }
-
         #endregion
 
         #region Property change handler
@@ -148,13 +160,14 @@ namespace SaintSender.UI.Views
         {
             try
             {
-                Mails.Clear();
+                OfflineMails.Clear();
                 MailAddress address = new MailAddress(Repository.login);
                 string name = address.User;
                 foreach (var item in MailStorage.LoadMails(name))
                 {
-                    Mails.Add(item);
+                    OfflineMails.Add(item);
                 }
+                SelectedMailList = OfflineMails;
             }
             catch (Exception)
             {
@@ -219,7 +232,7 @@ namespace SaintSender.UI.Views
 
         private LoginConfig GetLoginConfig()
         {
-            return new LoginConfig(Config, Repository);
+                return new LoginConfig(Config, Repository);
         }
 
         private void MainWindow_Unloaded(object sender, RoutedEventArgs e)
@@ -231,9 +244,29 @@ namespace SaintSender.UI.Views
         /// Tries to connect to test website to verify whether there is internet connection
         /// </summary>
         /// <returns>True if connection was succesful</returns>
+        private void CheckConnection()
+        {
+            OfflineMode = !CheckForInternetConnection();
+        }
+
+        /// <summary>
+        /// Tries to connect to test website to verify whether there is internet connection
+        /// </summary>
+        /// <returns>True if connection was succesful</returns>
         private static bool CheckForInternetConnection()
         {
-            return true;
+            try
+            {
+                using (var client = new WebClient())
+                using (client.OpenRead("http://clients3.google.com/generate_204"))
+                {
+                    return true;
+                }
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public async Task Debug()
@@ -258,6 +291,22 @@ namespace SaintSender.UI.Views
                     Mails.Add(item);
                 }
             }
+        }
+
+        private void Search(string phrase)
+        {
+            var foundEmails = new ObservableCollection<MailModel>();
+            var reg = new Regex(phrase);
+            foreach (var email in Mails)
+            {
+                if (reg.IsMatch(email.Message) || reg.IsMatch(email.Subject) || reg.IsMatch(email.Sender))
+                {
+                    foundEmails.Add(email);
+                }
+            }
+
+            SearchResults = foundEmails;
+            SelectedMailList = SearchResults;
         }
     }
 }
