@@ -1,0 +1,41 @@
+﻿<UserControl x:Class="SaintSender.UI.Views.InboxView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:SaintSender.UI.Views"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <Style x:Key="globalBackground" TargetType="Grid">
+        </Style>
+        <Style x:Key="listViewBackground" TargetType="ListView">
+            <Setter Property = "Background" Value = "#666666" />
+            <Setter Property = "BorderThickness" Value = "0" />
+        </Style>
+        <Style x:Key="greyTextBlock" TargetType="TextBlock">
+            <Setter Property = "Foreground" Value = "WhiteSmoke" />
+            <Setter Property = "FontSize" Value = "12" />
+        </Style>
+    </UserControl.Resources>
+    <ListView ItemsSource="{Binding SelectedMailList}" d:DataContext="{d:DesignInstance Type=local:MainWindow}"
+              SelectionMode="Single" SelectedItem="{Binding SelectedMail}" Style="{StaticResource listViewBackground}">
+        <ListView.ItemTemplate>
+            <DataTemplate>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="50*"/>
+                        <ColumnDefinition Width="50*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="50*"/>
+                        <RowDefinition Height="50*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.ColumnSpan="2" Text="{Binding Path=Subject}" Style="{StaticResource greyTextBlock}" />
+                    <TextBlock Grid.Row="1" Text="{Binding Path=Date, StringFormat={}{0:yyyy/MM/dd}}" Style="{StaticResource greyTextBlock}" />
+                    <TextBlock Margin="10,0,0,0" Grid.Row="1" Grid.Column="1" Text="{Binding Path=Sender}" Style="{StaticResource greyTextBlock}" />
+                </Grid>
+            </DataTemplate>
+        </ListView.ItemTemplate>
+    </ListView>
+</UserControl>

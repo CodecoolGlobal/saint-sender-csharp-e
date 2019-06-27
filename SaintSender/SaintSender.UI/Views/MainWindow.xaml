@@ -3,10 +3,28 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:SaintSender.UI"
+        xmlns:views="clr-namespace:SaintSender.UI.Views"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        
+        Title="SaintSender" MinHeight="400" MinWidth="600" Height="720" Width="1280">
+    <Grid Background="#666666">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="33"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="400*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="100*"/>
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition Width="150*"/>
+        </Grid.ColumnDefinitions>
+        <views:ButtonMenu Grid.ColumnSpan="3" Margin="5,2,0,0"/>
+        <StackPanel Grid.Row="1" Grid.ColumnSpan="4" Orientation="Vertical">
+            <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
+        </StackPanel>
+        <views:InboxView Grid.Row="2" Margin="5,5,0,5"/>
+        <StackPanel Grid.Row="1" Grid.RowSpan="2" Grid.Column="1" Orientation="Horizontal">
+            <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
+        </StackPanel>
+        <views:ReadMailView Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2" Margin="0,5,5,5"/>
     </Grid>
 </Window>
