@@ -48,11 +48,8 @@ namespace SaintSender.UI.Views
             SaveMailsToStorageCommand = new RelayCommand(SaveMailsToStorage);
             LoadMailsFromStorageCommand = new RelayCommand(LoadMailsFromStorage);
             LoadMailsFromServerCommand = new RelayCommand(LoadMailsFromServer);
-            SearchCommand = new RelayCommand((obj) =>
-            {
-                Search(obj.ToString());
-                SelectedMailList = SearchResults;
-            }, (obj) => obj.ToString().Length > 3);
+            SearchCommand = new RelayCommand((obj) => Search(obj), (obj) => obj.ToString().Length > 3 || obj.ToString().Length == 0);
+            ShowSendEmailWindowCommand = new RelayCommand(ShowSendEmailWindow);
         }
         #region ICommands
         public ICommand SaveMailsToStorageCommand { get; set; }
@@ -60,6 +57,7 @@ namespace SaintSender.UI.Views
         public ICommand LoadMailsFromServerCommand { get; set; }
         public ICommand OpenSendEmailWindowCommand { get; set; }
         public ICommand SearchCommand { get; set; }
+        public ICommand ShowSendEmailWindowCommand { get; private set; }
         #endregion
 
         #region Properties
@@ -187,9 +185,9 @@ namespace SaintSender.UI.Views
             }
         }
 
-        private void showSendEmailWindow(object obj)
+        private void ShowSendEmailWindow(object obj)
         {
-            sew = new SendEmailWindow(Repository);
+            var sew = new SendEmailWindow(Repository);
             sew.Show();
         }
 
