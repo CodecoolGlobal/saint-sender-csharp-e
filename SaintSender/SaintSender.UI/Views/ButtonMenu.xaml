@@ -8,6 +8,11 @@
              d:DesignHeight="30" d:DesignWidth="1200">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <Style x:Key="inputDesign" TargetType="Control">
+            <Setter Property = "Foreground" Value = "#333333" />
+            <Setter Property = "Background" Value = "#DDDDDD" />
+            <Setter Property = "FontSize" Value = "20" />
+        </Style>
     </UserControl.Resources>
     <StackPanel Orientation="Horizontal" d:DataContext="{d:DesignInstance Type=local:MainWindow}">
         <Button Width="70" Background="#006600" Foreground="#DDDDDD" Command="{Binding SignInCommand}">Login</Button>
@@ -15,7 +20,7 @@
         <Button Width="70" Command="{Binding LoadMailsFromServerCommand}">Refresh</Button>
         <Button Width="70" Command="{Binding SaveMailsToStorageCommand}">Store</Button>
         <Button Width="70" Background="#4d0000" Foreground="#DDDDDD" Command="{Binding LoadMailsFromStorageCommand}">Restore</Button>
-        <TextBox x:Name="SearchBox" Width="200"></TextBox>
+        <TextBox x:Name="SearchBox" Style="{StaticResource inputDesign}" Width="200"></TextBox>
         <Button Width="70" Command="{Binding SearchCommand}" CommandParameter="{Binding Text, ElementName=SearchBox}" IsDefault="{Binding IsFocused, ElementName=SearchBox}">Search</Button>
         <Label Width="100" VerticalAlignment="Stretch" IsEnabled="False" BorderThickness="1" BorderBrush="#666666" Visibility="{Binding Path=OfflineMode, Converter={StaticResource BoolToVis}}"
                Background="DarkRed" Foreground="#DDDDDD" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">Offline Mode</Label>

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Search;
@@ -9,6 +8,8 @@ using System;
 using System.Net.Mail;
 using System.Net;
 using MailKit.Security;
+using System.Net.Sockets;
+using SaintSender.UI.Utils;
 
 namespace SaintSender.Backend.Models
 {
@@ -112,26 +113,25 @@ namespace SaintSender.Backend.Models
         public IEnumerable<MailModel> GetLastMails(int count = 10)
         {
             var mails = new List<MailModel>();
-
+            
             using (var client = new ImapClient())
             {
-                client.Connect(mailServer, port, ssl);
-
-                // Note: since we don't have an OAuth2 token, disable
-                // the XOAUTH2 authentication mechanism.
-                client.AuthenticationMechanisms.Remove("XOAUTH2");
-
                 try
                 {
+                    client.Connect(mailServer, port, ssl);
+
+                    // Note: since we don't have an OAuth2 token, disable
+                    // the XOAUTH2 authentication mechanism.
+                    client.AuthenticationMechanisms.Remove("XOAUTH2");
                     client.Authenticate(login, password);
 
                     // The Inbox folder is always available on all IMAP servers...
                     var inbox = client.Inbox;
                     inbox.Open(FolderAccess.ReadOnly);
-                    var results = inbox.Search(SearchQuery.All).Reverse().Take(count);
-                    foreach (var uniqueId in results)
+                    var results = inbox.Search(SearchQuery.All).Reverse().Take(count).Reverse().ToList();
+                    for (int i = 0; i < results.Count; i++)
                     {
-
+                        var uniqueId = results[i];
                         MimeMessage t = inbox.GetMessage(uniqueId);
 
 
@@ -142,11 +142,23 @@ namespace SaintSender.Backend.Models
                         //Mark message as read
                         //inbox.AddFlags(uniqueId, MessageFlags.Seen, true);
                     }
-                    client.Disconnect(true);
+                    var items = inbox.Fetch(results.ToList(), MessageSummaryItems.Flags);
+                    for (int i = 0; i < items.Count; i++)
+                    {
+                        var item = items[i];
+                        if (item.Flags.Value.HasFlag(MessageFlags.Seen))
+                        {
+                            mails[i].Read = true;
+                        }
+                    }
                 }
                 catch (AuthenticationException)
                 {
                     AreCredentialsCorrect = false;
+                }
+                catch (SocketException)
+                {
+                    throw new NoInternetConnectionException();
                 }
                 catch(Exception e)
                 {
@@ -193,23 +205,30 @@ namespace SaintSender.Backend.Models
             return correct;
         }
 
+        /// <summary>
+        /// Sends the given MailModel email.
+        /// </summary>
+        /// <param name="email">Email to be sent</param>
         public void SendEmail(MailModel email)
         {
-            var fromAddress = new MailAddress(login, login.Split('@')[0]);
-            var toAddress = new MailAddress(email.Receiver, email.Receiver.Split('@')[0]);
-            string fromPassword = password;
-            string subject = email.Subject;
-            string body = email.Message;
-
+            // Create the smtp client with the given credentials
             var smtp = new SmtpClient
             {
                 Host = "smtp.gmail.com",
                 Port = 587,
                 EnableSsl = true,
                 DeliveryMethod = SmtpDeliveryMethod.Network,
-                Credentials = new NetworkCredential(fromAddress.Address, fromPassword),
+                Credentials = new NetworkCredential(login, password),
                 Timeout = 20000
             };
+
+            // Extract the data from the MailModel class and convert it.
+            var fromAddress = new MailAddress(login, login.Split('@')[0]);
+            var toAddress = new MailAddress(email.Receiver, email.Receiver.Split('@')[0]);
+            string subject = email.Subject;
+            string body = email.Message;
+
+            // Create the message and send it.
             using (var message = new MailMessage(fromAddress, toAddress)
             {
                 Subject = subject,
@@ -218,16 +237,6 @@ namespace SaintSender.Backend.Models
             {
                 smtp.Send(message);
             }
-        }
-
-        public static string Encode(string text)
-        {
-            byte[] bytes = Encoding.UTF8.GetBytes(text);
-
-            return Convert.ToBase64String(bytes)
-                .Replace('+', '-')
-                .Replace('/', '_')
-                .Replace("=", "");
         }
     }
 }

@@ -9,18 +9,36 @@ namespace SaintSender.UI.ViewModels
 {
     class InboxViewModel
     {
-        InboxViewModel(MailModel mail)
+        public InboxViewModel(MailModel mail)
         {
             Mail = mail;
         }
 
         public MailModel Mail { get; private set; }
 
-        public DateTime Date
+        public string Date
         {
             get
             {
-                return Mail.Date;
+                TimeSpan timeSpan = DateTime.Today - Mail.Date;
+                int elapsedDays = DateTime.Today.DayOfYear - Mail.Date.DayOfYear;
+                if (elapsedDays == 0)
+                {
+                    return "Today";
+                }
+                if (elapsedDays == 1)
+                {
+                    return "Yesterday";
+                }
+                if (elapsedDays == 2)
+                {
+                    return "Two days ago";
+                }
+                else if (elapsedDays < 8)
+                {
+                    return "This week";
+                }
+                return Mail.Date.ToShortDateString();
             }
         }
         public string Subject
@@ -38,6 +56,19 @@ namespace SaintSender.UI.ViewModels
             }
         }
 
-        
+        public string TextBoldness
+        {
+            get
+            {
+                if (Mail.Read)
+                {
+                    return "Normal";
+                }
+                else
+                {
+                    return "Bold";
+                }
+            }
+        }
     }
 }
