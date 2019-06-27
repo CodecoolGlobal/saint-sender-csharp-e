@@ -80,8 +80,8 @@ namespace SaintSender.Backend.Models
                     // The Inbox folder is always available on all IMAP servers...
                     var inbox = client.Inbox;
                     inbox.Open(FolderAccess.ReadOnly);
-                    var results = inbox.Search(SearchOptions.All, SearchQuery.All);
-                    foreach (var uniqueId in results.UniqueIds)
+                    var results = inbox.Search(SearchQuery.All);
+                    foreach (var uniqueId in results)
                     {
                         MimeMessage t = inbox.GetMessage(uniqueId);
 
@@ -92,15 +92,12 @@ namespace SaintSender.Backend.Models
                         //Mark message as read
                         //inbox.AddFlags(uniqueId, MessageFlags.Seen, true);
                     }
+
+                    client.Disconnect(true);
                 }
                 catch (AuthenticationException)
                 {
                     AreCredentialsCorrect = false;
-                }
-                finally
-                {
-
-                    client.Disconnect(true);
                 }
             }
 
@@ -124,7 +121,6 @@ namespace SaintSender.Backend.Models
                 // the XOAUTH2 authentication mechanism.
                 client.AuthenticationMechanisms.Remove("XOAUTH2");
 
-
                 try
                 {
                     client.Authenticate(login, password);
@@ -146,14 +142,15 @@ namespace SaintSender.Backend.Models
                         //Mark message as read
                         //inbox.AddFlags(uniqueId, MessageFlags.Seen, true);
                     }
+                    client.Disconnect(true);
                 }
                 catch (AuthenticationException)
                 {
                     AreCredentialsCorrect = false;
                 }
-                finally
+                catch(Exception e)
                 {
-                    client.Disconnect(true);
+                    Console.WriteLine(e);
                 }
             }
 

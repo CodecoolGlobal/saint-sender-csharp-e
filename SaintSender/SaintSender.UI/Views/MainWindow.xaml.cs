@@ -9,9 +9,7 @@ using System.Net.Mail;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 
@@ -54,6 +52,9 @@ namespace SaintSender.UI.Views
                 Search(obj.ToString());
                 SelectedMailList = SearchResults;
             }, (obj) => obj.ToString().Length > 3);
+
+            // Check for internet connection
+            Task.Run(() => CheckConnection());
         }
         #region ICommands
         public ICommand SaveMailsToStorageCommand { get; set; }
@@ -64,6 +65,7 @@ namespace SaintSender.UI.Views
 
         #region Properties
         public ObservableCollection<MailModel> Mails { get; set; } = new ObservableCollection<MailModel>();
+        public ObservableCollection<MailModel> OfflineMails { get; set; } = new ObservableCollection<MailModel>();
         public ObservableCollection<MailModel> SearchResults { get; set; } = new ObservableCollection<MailModel>();
         public ObservableCollection<MailModel> SelectedMailList
         {
@@ -97,8 +99,11 @@ namespace SaintSender.UI.Views
         {
             get => _selectedMail; set
             {
-                _selectedMail = value;
-                OnPropertyChanged();
+                if(value != null)
+                {
+                    _selectedMail = value.Copy();
+                    OnPropertyChanged();
+                }
             }
         }
         #endregion
@@ -147,13 +152,14 @@ namespace SaintSender.UI.Views
         {
             try
             {
-                Mails.Clear();
+                OfflineMails.Clear();
                 MailAddress address = new MailAddress(Repository.login);
                 string name = address.User;
                 foreach (var item in MailStorage.LoadMails(name))
                 {
-                    Mails.Add(item);
+                    OfflineMails.Add(item);
                 }
+                SelectedMailList = OfflineMails;
             }
             catch (Exception)
             {
@@ -179,36 +185,8 @@ namespace SaintSender.UI.Views
         }
         #endregion
 
-        public MainWindow()
+        private LoginConfig GetLoginConfig()
         {
-            DataContext = this;
-            InitializeComponent();
-            Unloaded += MainWindow_Unloaded;
-
-            // Initialize login config window
-            Config = ConfigHandler.Load();
-            _loginConfigWindow = GetLoginConfig();
-
-            // Debug
-#warning debug repo, remove once login fixed
-            Repository = new MailRepository();
-            SelectedMailList = Mails;
-
-            // Setup commands
-            SignInCommand = new RelayCommand(ShowSignInWindow);
-            SaveMailsToStorageCommand = new RelayCommand(SaveMailsToStorage);
-            LoadMailsFromStorageCommand = new RelayCommand(LoadMailsFromStorage);
-            LoadMailsFromServerCommand = new RelayCommand(LoadMailsFromServer);
-            SearchCommand = new RelayCommand((obj) =>
-            {
-                Search(obj.ToString());
-                SelectedMailList = SearchResults;
-            }, (obj) => obj.ToString().Length > 3);
-
-            // Check for internet connection
-            Task.Run(() => CheckConnection()); }
-            private LoginConfig GetLoginConfig()
-            {
                 return new LoginConfig(Config, Repository);
         }
 
@@ -217,6 +195,10 @@ namespace SaintSender.UI.Views
             Environment.Exit(0);
         }
 
+        /// <summary>
+        /// Tries to connect to test website to verify whether there is internet connection
+        /// </summary>
+        /// <returns>True if connection was succesful</returns>
         private void CheckConnection()
         {
             OfflineMode = !CheckForInternetConnection();
@@ -228,7 +210,18 @@ namespace SaintSender.UI.Views
         /// <returns>True if connection was succesful</returns>
         private static bool CheckForInternetConnection()
         {
-            return true;
+            try
+            {
+                using (var client = new WebClient())
+                using (client.OpenRead("http://clients3.google.com/generate_204"))
+                {
+                    return true;
+                }
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public async Task Debug()
