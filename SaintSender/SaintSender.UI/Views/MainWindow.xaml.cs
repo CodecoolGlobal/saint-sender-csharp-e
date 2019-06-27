@@ -26,6 +26,7 @@ namespace SaintSender.UI.Views
         private MailRepository _repository;
 
         private SendEmailWindow _send;
+        private bool offlineMode = true;
 
         public MainWindow()
         {
@@ -33,12 +34,18 @@ namespace SaintSender.UI.Views
             InitializeComponent();
             Unloaded += MainWindow_Unloaded;
 
+            // Check for internet connection
+            CheckConnection();
+
             // Initialize login config window
             Config = ConfigHandler.Load();
             _loginConfigWindow = GetLoginConfig();
 
             Repository = new MailRepository(Config.Address, Config.Password);
-            Repository.CheckCredentials();
+            if (!OfflineMode)
+            {
+                Repository.CheckCredentials();
+            }
 
             MailRefreshTimer.Interval = new TimeSpan(0, 0, 5);
             MailRefreshTimer.Tick += (obj, args) => RefreshMailListAsync();
@@ -51,9 +58,6 @@ namespace SaintSender.UI.Views
             LoadMailsFromServerCommand = new RelayCommand(LoadMailsFromServer);
             SearchCommand = new RelayCommand((obj) => Search(obj), (obj) => obj.ToString().Length > 3 || obj.ToString().Length == 0);
             ShowSendEmailWindowCommand = new RelayCommand(ShowSendEmailWindow);
-
-            // Check for internet connection
-            Task.Run(() => CheckConnection());
         }
 
         #region ICommands
@@ -81,8 +85,14 @@ namespace SaintSender.UI.Views
         /// <summary>
         /// Gets and sets whether the application is running in offline mode
         /// </summary>
-        public bool OfflineMode { get; set; } = true;
-
+        public bool OfflineMode
+        {
+            get => offlineMode; set
+            {
+                offlineMode = value;
+                OnPropertyChanged();
+            }
+        }
         public ICommand SignInCommand { get; set; }
 
         public ConfigHandler Config { get; set; }
@@ -101,7 +111,7 @@ namespace SaintSender.UI.Views
         {
             get => _selectedMail; set
             {
-                if(value != null)
+                if (value != null)
                 {
                     _selectedMail = value.Copy();
                     OnPropertyChanged();
@@ -179,8 +189,12 @@ namespace SaintSender.UI.Views
         /// Gets mails from remote server for the current user
         /// </summary>
         /// <param name="o"></param>
-        public void LoadMailsFromServer(object o)
+        public async void LoadMailsFromServer(object o)
         {
+            if (OfflineMode)
+            {
+                bool canGoOnline = await Task<bool>.Factory.StartNew(() => CheckConnection());
+            }
             try
             {
                 RefreshMailListAsync();
@@ -189,19 +203,6 @@ namespace SaintSender.UI.Views
             catch (Exception)
             {
                 Console.WriteLine("No user logged in");
-            }
-        }
-
-        /// <summary>
-        /// Get mails from gmail's webserver
-        /// </summary>
-        /// <param name="o"></param>
-        public void RefreshMails(object o)
-        {
-            Mails.Clear();
-            foreach (var item in Repository.GetAllMails())
-            {
-                Mails.Add(item);
             }
         }
 
@@ -232,7 +233,7 @@ namespace SaintSender.UI.Views
 
         private LoginConfig GetLoginConfig()
         {
-                return new LoginConfig(Config, Repository);
+            return new LoginConfig(Config, Repository);
         }
 
         private void MainWindow_Unloaded(object sender, RoutedEventArgs e)
@@ -244,9 +245,10 @@ namespace SaintSender.UI.Views
         /// Tries to connect to test website to verify whether there is internet connection
         /// </summary>
         /// <returns>True if connection was succesful</returns>
-        private void CheckConnection()
+        private bool CheckConnection()
         {
             OfflineMode = !CheckForInternetConnection();
+            return OfflineMode;
         }
 
         /// <summary>
@@ -269,27 +271,26 @@ namespace SaintSender.UI.Views
             }
         }
 
-        public async Task Debug()
-        {
-
-            MailRepository mailRepo = new MailRepository();
-            Mails.Clear();
-            var items = await Task<IEnumerable<MailModel>>.Factory.StartNew(() => mailRepo.GetLastMails(10));
-            foreach (var item in items)
-            {
-                Mails.Add(item);
-            }
-        }
-
         private async Task RefreshMailListAsync()
         {
-            IEnumerable<MailModel> mails = await Task< IEnumerable < MailModel >>.Factory.StartNew(() => Repository.GetLastMails(10));
-            foreach (var item in mails)
+            if (OfflineMode)
             {
-                if (!Mails.Contains(item))
+                return;
+            }
+            try
+            {
+                IEnumerable<MailModel> mails = await Task<IEnumerable<MailModel>>.Factory.StartNew(() => Repository.GetLastMails(10));
+                foreach (var item in mails)
                 {
-                    Mails.Add(item);
+                    if (!Mails.Contains(item))
+                    {
+                        Mails.Add(item);
+                    }
                 }
+            }
+            catch (NoInternetConnectionException)
+            {
+                OfflineMode = true;
             }
         }
 

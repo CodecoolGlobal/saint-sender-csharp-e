@@ -21,6 +21,7 @@ namespace SaintSender.UI.Views
 
         public LoginConfig(ConfigHandler config, MailRepository repo)
         {
+            Repository = repo;
             Config = config;
             SignInCommand = new RelayCommand(SignIn);
             CancelCommand = new RelayCommand((o) => Close());

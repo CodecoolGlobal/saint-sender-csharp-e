@@ -9,6 +9,8 @@ using System;
 using System.Net.Mail;
 using System.Net;
 using MailKit.Security;
+using System.Net.Sockets;
+using SaintSender.UI.Utils;
 
 namespace SaintSender.Backend.Models
 {
@@ -112,17 +114,16 @@ namespace SaintSender.Backend.Models
         public IEnumerable<MailModel> GetLastMails(int count = 10)
         {
             var mails = new List<MailModel>();
-
+            
             using (var client = new ImapClient())
             {
-                client.Connect(mailServer, port, ssl);
-
-                // Note: since we don't have an OAuth2 token, disable
-                // the XOAUTH2 authentication mechanism.
-                client.AuthenticationMechanisms.Remove("XOAUTH2");
-
                 try
                 {
+                    client.Connect(mailServer, port, ssl);
+
+                    // Note: since we don't have an OAuth2 token, disable
+                    // the XOAUTH2 authentication mechanism.
+                    client.AuthenticationMechanisms.Remove("XOAUTH2");
                     client.Authenticate(login, password);
 
                     // The Inbox folder is always available on all IMAP servers...
@@ -147,6 +148,10 @@ namespace SaintSender.Backend.Models
                 catch (AuthenticationException)
                 {
                     AreCredentialsCorrect = false;
+                }
+                catch (SocketException)
+                {
+                    throw new NoInternetConnectionException();
                 }
                 catch(Exception e)
                 {
