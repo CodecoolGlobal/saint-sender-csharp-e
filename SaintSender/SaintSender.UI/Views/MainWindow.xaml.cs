@@ -24,6 +24,7 @@ namespace SaintSender.UI.Views
         private LoginConfig _loginConfigWindow;
         private ObservableCollection<MailModel> _selectedMailList;
         private MailRepository _repository;
+        private bool _isRefreshing = false;
 
         private SendEmailWindow _send;
         private bool offlineMode = true;
@@ -47,6 +48,8 @@ namespace SaintSender.UI.Views
                 Repository.CheckCredentials();
             }
 
+            SelectedMailList = Mails;
+
             MailRefreshTimer.Interval = new TimeSpan(0, 0, 5);
             MailRefreshTimer.Tick += (obj, args) => RefreshMailListAsync();
             MailRefreshTimer.Start();
@@ -55,7 +58,7 @@ namespace SaintSender.UI.Views
             SignInCommand = new RelayCommand(ShowSignInWindow);
             SaveMailsToStorageCommand = new RelayCommand(SaveMailsToStorage);
             LoadMailsFromStorageCommand = new RelayCommand(LoadMailsFromStorage);
-            LoadMailsFromServerCommand = new RelayCommand(LoadMailsFromServer);
+            LoadMailsFromServerCommand = new RelayCommand(LoadMailsFromServer, (o) => !IsRefreshing);
             SearchCommand = new RelayCommand((obj) => Search(obj), (obj) => obj.ToString().Length > 3 || obj.ToString().Length == 0);
             ShowSendEmailWindowCommand = new RelayCommand(ShowSendEmailWindow);
         }
@@ -93,6 +96,17 @@ namespace SaintSender.UI.Views
                 OnPropertyChanged();
             }
         }
+
+        public bool IsRefreshing
+        {
+            get => _isRefreshing; set
+            {
+                _isRefreshing = value;
+                CommandManager.InvalidateRequerySuggested();
+                OnPropertyChanged();
+            }
+        }
+
         public ICommand SignInCommand { get; set; }
 
         public ConfigHandler Config { get; set; }
@@ -103,6 +117,9 @@ namespace SaintSender.UI.Views
             set
             {
                 _repository = value;
+                Mails.Clear();
+                OfflineMails.Clear();
+                SearchResults.Clear();
                 RefreshMailListAsync();
             }
         }
@@ -279,12 +296,13 @@ namespace SaintSender.UI.Views
             }
             try
             {
+                IsRefreshing = true;
                 IEnumerable<MailModel> mails = await Task<IEnumerable<MailModel>>.Factory.StartNew(() => Repository.GetLastMails(10));
                 foreach (var item in mails)
                 {
                     if (!Mails.Contains(item))
                     {
-                        Mails.Add(item);
+                        Mails.Insert(0, item);
                     }
                 }
             }
@@ -292,6 +310,7 @@ namespace SaintSender.UI.Views
             {
                 OfflineMode = true;
             }
+            IsRefreshing = false;
         }
 
         private void Search(string phrase)

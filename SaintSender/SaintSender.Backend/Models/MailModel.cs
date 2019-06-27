@@ -63,7 +63,15 @@ namespace SaintSender.Backend.Models
 
         public MailModel(MimeMessage mimeMessage, UniqueId id)
         {
-            Message = mimeMessage.HtmlBody;
+            if(mimeMessage.HtmlBody != null)
+            {
+                Message = mimeMessage.HtmlBody;
+            }
+            else
+            {
+                //Message = "testa";
+                Message = ((TextPart)mimeMessage.Body).Text;
+            }
             Subject = mimeMessage.Subject;
             Sender = mimeMessage.From.Mailboxes.First().Address;
             Date = mimeMessage.Date.DateTime;

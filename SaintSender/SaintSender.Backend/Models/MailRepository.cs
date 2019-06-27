@@ -129,7 +129,7 @@ namespace SaintSender.Backend.Models
                     // The Inbox folder is always available on all IMAP servers...
                     var inbox = client.Inbox;
                     inbox.Open(FolderAccess.ReadOnly);
-                    var results = inbox.Search(SearchQuery.All).Reverse().Take(count);
+                    var results = inbox.Search(SearchQuery.All).Reverse().Take(count).Reverse();
                     foreach (var uniqueId in results)
                     {
 
