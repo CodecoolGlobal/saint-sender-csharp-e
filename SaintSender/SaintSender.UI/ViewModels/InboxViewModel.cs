@@ -56,6 +56,19 @@ namespace SaintSender.UI.ViewModels
             }
         }
 
-        
+        public string TextBoldness
+        {
+            get
+            {
+                if (Mail.Read)
+                {
+                    return "Normal";
+                }
+                else
+                {
+                    return "Bold";
+                }
+            }
+        }
     }
 }

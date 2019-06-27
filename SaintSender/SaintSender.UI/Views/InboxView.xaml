@@ -17,6 +17,7 @@
         <Style x:Key="greyTextBlock" TargetType="TextBlock">
             <Setter Property = "Foreground" Value = "WhiteSmoke" />
             <Setter Property = "FontSize" Value = "12" />
+            <Setter Property="FontWeight" Value="{Binding TextBoldness}"/>
         </Style>
         <DataTemplate x:Key="mailTemplate">
             <Grid>

@@ -128,10 +128,10 @@ namespace SaintSender.Backend.Models
                     // The Inbox folder is always available on all IMAP servers...
                     var inbox = client.Inbox;
                     inbox.Open(FolderAccess.ReadOnly);
-                    var results = inbox.Search(SearchQuery.All).Reverse().Take(count).Reverse();
-                    foreach (var uniqueId in results)
+                    var results = inbox.Search(SearchQuery.All).Reverse().Take(count).Reverse().ToList();
+                    for (int i = 0; i < results.Count; i++)
                     {
-
+                        var uniqueId = results[i];
                         MimeMessage t = inbox.GetMessage(uniqueId);
 
 
@@ -142,7 +142,15 @@ namespace SaintSender.Backend.Models
                         //Mark message as read
                         //inbox.AddFlags(uniqueId, MessageFlags.Seen, true);
                     }
-                    client.Disconnect(true);
+                    var items = inbox.Fetch(results.ToList(), MessageSummaryItems.Flags);
+                    for (int i = 0; i < items.Count; i++)
+                    {
+                        var item = items[i];
+                        if (item.Flags.Value.HasFlag(MessageFlags.Seen))
+                        {
+                            mails[i].Read = true;
+                        }
+                    }
                 }
                 catch (AuthenticationException)
                 {
