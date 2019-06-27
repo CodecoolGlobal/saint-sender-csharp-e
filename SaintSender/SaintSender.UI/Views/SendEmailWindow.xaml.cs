@@ -1,7 +1,9 @@
 ﻿using SaintSender.Backend.Models;
 using SaintSender.UI.Utils;
 using SaintSender.UI.ViewModels;
+using System.ComponentModel;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 
@@ -22,6 +24,7 @@ namespace SaintSender.UI.Views
                 MessageBox.Show("Please login first!");
                 return;
             }
+
             SendCommand = new RelayCommand((obj) => {
                 var reg = new Regex(@"^\w+@(\w.)+[a-z]{2,3}$");
                 if (!reg.IsMatch(EmailVM.Email.Receiver))
@@ -33,10 +36,20 @@ namespace SaintSender.UI.Views
                 Close();
             });
 
-            CloseCommand = new RelayCommand((obj) => Close());
+            CloseCommand = new RelayCommand((obj) =>
+            {
+                var confirmWindow = new DialogWindow(this);
+                confirmWindow.Show();
+                
+            });
 
             InitializeComponent();
             DataContext = this;
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            
         }
     }
 }

@@ -84,11 +84,15 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Utils\BrowserBehavior.cs" />
+    <Compile Include="ViewModels\DialogViewModel.cs" />
     <Compile Include="ViewModels\InboxViewModel.cs" />
     <Compile Include="ViewModels\ReadMailViewModel.cs" />
     <Compile Include="ViewModels\SendMailViewModel.cs" />
     <Compile Include="Views\ButtonMenu.xaml.cs">
       <DependentUpon>ButtonMenu.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DialogWindow.xaml.cs">
+      <DependentUpon>DialogWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\InboxView.xaml.cs">
       <DependentUpon>InboxView.xaml</DependentUpon>
@@ -100,6 +104,10 @@
       <DependentUpon>SendEmailWindow.xaml</DependentUpon>
     </Compile>
     <Page Include="Views\ButtonMenu.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DialogWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
