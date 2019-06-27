@@ -14,17 +14,17 @@ namespace SaintSender.Backend.Models
         /// <summary>
         /// Gets and sets the subject of the email
         /// </summary>
-        public string Subject { get; set; } = "[Error] Subject didn't load";
+        public string Subject { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets and sets the main body of the email
         /// </summary>
-        public string Message { get; set; } = "[Error] Message didn't load";
+        public string Message { get; set; } = "<h1>Welcome to SaintSender!</h1>";
 
         /// <summary>
         /// Gets and sets the email of the sender
         /// </summary>
-        public string Sender { get; set; } = "[Error] Sender didn't load";
+        public string Sender { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets and sets when the email was sent
@@ -63,7 +63,15 @@ namespace SaintSender.Backend.Models
 
         public MailModel(MimeMessage mimeMessage, UniqueId id)
         {
-            Message = mimeMessage.HtmlBody;
+            if(mimeMessage.HtmlBody != null)
+            {
+                Message = mimeMessage.HtmlBody;
+            }
+            else
+            {
+                //Message = "testa";
+                Message = ((TextPart)mimeMessage.Body).Text;
+            }
             Subject = mimeMessage.Subject;
             Sender = mimeMessage.From.Mailboxes.First().Address;
             Date = mimeMessage.Date.DateTime;

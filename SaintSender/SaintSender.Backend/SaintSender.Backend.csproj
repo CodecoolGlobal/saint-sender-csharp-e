@@ -76,6 +76,7 @@
     <Compile Include="Models\MailModel.cs" />
     <Compile Include="Models\MailStorage.cs" />
     <Compile Include="Models\ConfigHandler.cs" />
+    <Compile Include="Models\NoInternetConnectionException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
