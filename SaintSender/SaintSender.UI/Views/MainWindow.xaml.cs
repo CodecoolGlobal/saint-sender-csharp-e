@@ -50,7 +50,7 @@ namespace SaintSender.UI.Views
             LoadMailsFromStorageCommand = new RelayCommand(LoadMailsFromStorage);
             LoadMailsFromServerCommand = new RelayCommand(LoadMailsFromServer);
             SearchCommand = new RelayCommand((obj) => Search(obj), (obj) => obj.ToString().Length > 3 || obj.ToString().Length == 0);
-            ShowSendEmailWindowCommand = new RelayCommand(ShowSendEmailWindow);
+            ShowSendEmailWindowCommand = new RelayCommand(ShowSendEmailWindow, (obj) => CheckForInternetConnection());
 
             // Check for internet connection
             Task.Run(() => CheckConnection());
