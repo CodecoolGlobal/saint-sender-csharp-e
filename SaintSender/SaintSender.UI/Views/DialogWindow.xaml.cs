@@ -16,14 +16,9 @@ namespace SaintSender.UI.Views
         {
             DataContext = this;
             _closingWindow = window;
+            DeclineDiscardCommand = new RelayCommand((obj) => Close());
             AcceptDiscardCommand = new RelayCommand(DiscardMessage);
-            DeclineDiscardCommand = new RelayCommand(CancelDiscard);
             InitializeComponent();
-        }
-
-        private void CancelDiscard(object obj)
-        {
-            Close();
         }
 
         private void DiscardMessage(object obj)
