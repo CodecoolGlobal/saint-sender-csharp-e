@@ -4,13 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Net;
 using System.Net.Mail;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 
@@ -23,8 +21,10 @@ namespace SaintSender.UI.Views
     {
         private MailModel _selectedMail = new MailModel();
         private LoginConfig _loginConfigWindow;
-        private ObservableCollection<MailModel> selectedMailList;
+        private ObservableCollection<MailModel> _selectedMailList;
         private MailRepository _repository;
+
+        private SendEmailWindow _send;
 
         public MainWindow()
         {
@@ -51,13 +51,14 @@ namespace SaintSender.UI.Views
             SearchCommand = new RelayCommand((obj) => Search(obj), (obj) => obj.ToString().Length > 3 || obj.ToString().Length == 0);
             ShowSendEmailWindowCommand = new RelayCommand(ShowSendEmailWindow);
         }
+
         #region ICommands
         public ICommand SaveMailsToStorageCommand { get; set; }
         public ICommand LoadMailsFromStorageCommand { get; set; }
         public ICommand LoadMailsFromServerCommand { get; set; }
         public ICommand OpenSendEmailWindowCommand { get; set; }
         public ICommand SearchCommand { get; set; }
-        public ICommand ShowSendEmailWindowCommand { get; private set; }
+        public ICommand ShowSendEmailWindowCommand { get; set; }
         #endregion
 
         #region Properties
@@ -65,9 +66,9 @@ namespace SaintSender.UI.Views
         public ObservableCollection<MailModel> SearchResults { get; set; } = new ObservableCollection<MailModel>();
         public ObservableCollection<MailModel> SelectedMailList
         {
-            get => selectedMailList; set
+            get => _selectedMailList; set
             {
-                selectedMailList = value;
+                _selectedMailList = value;
                 OnPropertyChanged();
             }
         }
@@ -117,6 +118,12 @@ namespace SaintSender.UI.Views
                 _loginConfigWindow = GetLoginConfig();
             }
             _loginConfigWindow.Show();
+        }
+
+        private void ShowSendEmailWindow(object obj)
+        {
+            _send = new SendEmailWindow(Repository);
+            _send.Show();
         }
 
         /// <summary>
@@ -185,10 +192,27 @@ namespace SaintSender.UI.Views
             }
         }
 
-        private void ShowSendEmailWindow(object obj)
+        private void Search(object obj)
         {
-            var sew = new SendEmailWindow(Repository);
-            sew.Show();
+            var phrase = obj.ToString();
+            if (phrase.Length == 0)
+            {
+                SelectedMailList = Mails;
+                return;
+            }
+
+            var foundEmails = new ObservableCollection<MailModel>();
+            var reg = new Regex(phrase);
+            foreach (var email in Mails)
+            {
+                if (reg.IsMatch(email.Message) || reg.IsMatch(email.Subject) || reg.IsMatch(email.Sender))
+                {
+                    foundEmails.Add(email);
+                }
+            }
+
+            SearchResults = foundEmails;
+            SelectedMailList = SearchResults;
         }
 
         #endregion
@@ -234,29 +258,6 @@ namespace SaintSender.UI.Views
                     Mails.Add(item);
                 }
             }
-        }
-
-        private void Search(object obj)
-        {
-            var phrase = obj.ToString();
-            if (phrase.Length == 0)
-            {
-                SelectedMailList = Mails;
-                return;
-            }
-            
-            var foundEmails = new ObservableCollection<MailModel>();
-            var reg = new Regex(phrase);
-            foreach (var email in Mails)
-            {
-                if (reg.IsMatch(email.Message) || reg.IsMatch(email.Subject) || reg.IsMatch(email.Sender))
-                {
-                    foundEmails.Add(email);
-                }
-            }
-
-            SearchResults = foundEmails;
-            SelectedMailList = SearchResults;
         }
     }
 }
