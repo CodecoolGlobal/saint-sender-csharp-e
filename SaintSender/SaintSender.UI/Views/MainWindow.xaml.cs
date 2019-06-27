@@ -25,6 +25,7 @@ namespace SaintSender.UI.Views
         public ICommand SaveMailsToStorageCommand { get; set; }
         public ICommand LoadMailsFromStorageCommand { get; set; }
         public ICommand LoadMailsFromServerCommand { get; set; }
+        public ICommand OpenSendEmailWindowCommand { get; set; }
         public ICommand SearchCommand { get; set; }
         #endregion
 
@@ -44,6 +45,8 @@ namespace SaintSender.UI.Views
 
         public ConfigHandler Config { get; set; }
 
+        public SendEmailWindow sew { get; set; }
+
         public MailRepository Repository { get; set; }
 
         public MailModel SelectedMail
@@ -54,6 +57,7 @@ namespace SaintSender.UI.Views
                 OnPropertyChanged();
             }
         }
+
         #endregion
 
         #region Property change handler
@@ -149,6 +153,13 @@ namespace SaintSender.UI.Views
                 Mails.Add(item);
             }
         }
+
+        private void showSendEmailWindow(object obj)
+        {
+            sew = new SendEmailWindow(Repository);
+            sew.Show();
+        }
+
         #endregion
 
         public MainWindow()
@@ -172,11 +183,8 @@ namespace SaintSender.UI.Views
             SaveMailsToStorageCommand = new RelayCommand(SaveMailsToStorage);
             LoadMailsFromStorageCommand = new RelayCommand(LoadMailsFromStorage);
             LoadMailsFromServerCommand = new RelayCommand(LoadMailsFromServer);
-            SearchCommand = new RelayCommand((obj) =>
-            {
-                Search(obj.ToString());
-                SelectedMailList = SearchResults;
-            }, (obj) => obj.ToString().Length > 3);
+            OpenSendEmailWindowCommand = new RelayCommand(showSendEmailWindow);
+            SearchCommand = new RelayCommand((obj) => Search(obj), (obj) => obj.ToString().Length > 2 || obj.ToString().Length == 0);
         }
 
         private LoginConfig GetLoginConfig()
@@ -204,8 +212,15 @@ namespace SaintSender.UI.Views
             }
         }
 
-        private void Search(string phrase)
+        private void Search(object obj)
         {
+            var phrase = obj.ToString();
+            if (phrase.Length == 0)
+            {
+                SelectedMailList = Mails;
+                return;
+            }
+            
             var foundEmails = new ObservableCollection<MailModel>();
             var reg = new Regex(phrase);
             foreach (var email in Mails)
