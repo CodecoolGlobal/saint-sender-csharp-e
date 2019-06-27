@@ -83,6 +83,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Converters\InboxViewModelConverter.cs" />
     <Compile Include="Utils\BrowserBehavior.cs" />
     <Compile Include="ViewModels\InboxViewModel.cs" />
     <Compile Include="ViewModels\ReadMailViewModel.cs" />
