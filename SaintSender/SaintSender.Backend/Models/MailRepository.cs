@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Search;
@@ -193,23 +192,30 @@ namespace SaintSender.Backend.Models
             return correct;
         }
 
+        /// <summary>
+        /// Sends the given MailModel email.
+        /// </summary>
+        /// <param name="email">Email to be sent</param>
         public void SendEmail(MailModel email)
         {
-            var fromAddress = new MailAddress(login, login.Split('@')[0]);
-            var toAddress = new MailAddress(email.Receiver, email.Receiver.Split('@')[0]);
-            string fromPassword = password;
-            string subject = email.Subject;
-            string body = email.Message;
-
+            // Create the smtp client with the given credentials
             var smtp = new SmtpClient
             {
                 Host = "smtp.gmail.com",
                 Port = 587,
                 EnableSsl = true,
                 DeliveryMethod = SmtpDeliveryMethod.Network,
-                Credentials = new NetworkCredential(fromAddress.Address, fromPassword),
+                Credentials = new NetworkCredential(login, password),
                 Timeout = 20000
             };
+
+            // Extract the data from the MailModel class and convert it.
+            var fromAddress = new MailAddress(login, login.Split('@')[0]);
+            var toAddress = new MailAddress(email.Receiver, email.Receiver.Split('@')[0]);
+            string subject = email.Subject;
+            string body = email.Message;
+
+            // Create the message and send it.
             using (var message = new MailMessage(fromAddress, toAddress)
             {
                 Subject = subject,
@@ -218,16 +224,6 @@ namespace SaintSender.Backend.Models
             {
                 smtp.Send(message);
             }
-        }
-
-        public static string Encode(string text)
-        {
-            byte[] bytes = Encoding.UTF8.GetBytes(text);
-
-            return Convert.ToBase64String(bytes)
-                .Replace('+', '-')
-                .Replace('/', '_')
-                .Replace("=", "");
         }
     }
 }

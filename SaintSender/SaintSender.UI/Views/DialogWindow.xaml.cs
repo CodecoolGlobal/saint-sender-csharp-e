@@ -9,22 +9,43 @@ namespace SaintSender.UI.Views
     /// </summary>
     public partial class DialogWindow : Window
     {
+        #region ICommands
+
+        /// <summary>
+        /// Command that closes the given window and this dialog as well.
+        /// </summary>
         public ICommand AcceptDiscardCommand { get; set; }
+        /// <summary>
+        /// Command that prevents the given window from closing and closes this dialog.
+        /// </summary>
         public ICommand DeclineDiscardCommand { get; set; }
-        private Window _closingWindow;
+
+        #endregion
+
+        /// <summary>
+        /// Creates a closing confirmation dialog window.
+        /// </summary>
+        /// <param name="window">Window whose closing need to be confirmed.</param>
         public DialogWindow(Window window)
         {
             DataContext = this;
-            _closingWindow = window;
             DeclineDiscardCommand = new RelayCommand((obj) => Close());
-            AcceptDiscardCommand = new RelayCommand(DiscardMessage);
+            AcceptDiscardCommand = new RelayCommand((obj) => DiscardMessage(window));
             InitializeComponent();
         }
 
-        private void DiscardMessage(object obj)
+        #region Command Methods
+
+        /// <summary>
+        /// Closes both the dialog and the given window.
+        /// </summary>
+        /// <param name="window"></param>
+        private void DiscardMessage(Window window)
         {
-            _closingWindow.Close();
+            window.Close();
             Close();
         }
+
+        #endregion
     }
 }
