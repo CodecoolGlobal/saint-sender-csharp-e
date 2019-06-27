@@ -60,7 +60,7 @@ namespace SaintSender.UI.Views
             LoadMailsFromStorageCommand = new RelayCommand(LoadMailsFromStorage);
             LoadMailsFromServerCommand = new RelayCommand(LoadMailsFromServer, (o) => !IsRefreshing);
             SearchCommand = new RelayCommand((obj) => Search(obj), (obj) => obj.ToString().Length > 3 || obj.ToString().Length == 0);
-            ShowSendEmailWindowCommand = new RelayCommand(ShowSendEmailWindow, (obj) => CheckForInternetConnection());
+            ShowSendEmailWindowCommand = new RelayCommand(ShowSendEmailWindow, (obj) => !OfflineMode);
         }
 
         #region ICommands
@@ -290,7 +290,7 @@ namespace SaintSender.UI.Views
 
         private async Task RefreshMailListAsync()
         {
-            if (OfflineMode)
+            if (OfflineMode || IsRefreshing)
             {
                 return;
             }
