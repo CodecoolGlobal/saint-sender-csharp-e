@@ -11,7 +11,7 @@
     </UserControl.Resources>
     <StackPanel Orientation="Horizontal" d:DataContext="{d:DesignInstance Type=local:MainWindow}">
         <Button Width="70" Background="#006600" Foreground="#DDDDDD" Command="{Binding SignInCommand}">Login</Button>
-        <Button Width="70" IsEnabled="False">Send</Button>
+        <Button Width="70" Command="{Binding ShowSendEmailWindowCommand}">Compose</Button>
         <Button Width="70" Command="{Binding LoadMailsFromServerCommand}">Refresh</Button>
         <Button Width="70" Command="{Binding SaveMailsToStorageCommand}">Store</Button>
         <Button Width="70" Background="#4d0000" Foreground="#DDDDDD" Command="{Binding LoadMailsFromStorageCommand}">Restore</Button>

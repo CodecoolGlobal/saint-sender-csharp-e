@@ -22,8 +22,10 @@ namespace SaintSender.UI.Views
     {
         private MailModel _selectedMail = new MailModel();
         private LoginConfig _loginConfigWindow;
-        private ObservableCollection<MailModel> selectedMailList;
+        private ObservableCollection<MailModel> _selectedMailList;
         private MailRepository _repository;
+
+        private SendEmailWindow _send;
 
         public MainWindow()
         {
@@ -47,20 +49,20 @@ namespace SaintSender.UI.Views
             SaveMailsToStorageCommand = new RelayCommand(SaveMailsToStorage);
             LoadMailsFromStorageCommand = new RelayCommand(LoadMailsFromStorage);
             LoadMailsFromServerCommand = new RelayCommand(LoadMailsFromServer);
-            SearchCommand = new RelayCommand((obj) =>
-            {
-                Search(obj.ToString());
-                SelectedMailList = SearchResults;
-            }, (obj) => obj.ToString().Length > 3);
+            SearchCommand = new RelayCommand((obj) => Search(obj), (obj) => obj.ToString().Length > 3 || obj.ToString().Length == 0);
+            ShowSendEmailWindowCommand = new RelayCommand(ShowSendEmailWindow);
 
             // Check for internet connection
             Task.Run(() => CheckConnection());
         }
+
         #region ICommands
         public ICommand SaveMailsToStorageCommand { get; set; }
         public ICommand LoadMailsFromStorageCommand { get; set; }
         public ICommand LoadMailsFromServerCommand { get; set; }
+        public ICommand OpenSendEmailWindowCommand { get; set; }
         public ICommand SearchCommand { get; set; }
+        public ICommand ShowSendEmailWindowCommand { get; set; }
         #endregion
 
         #region Properties
@@ -69,9 +71,9 @@ namespace SaintSender.UI.Views
         public ObservableCollection<MailModel> SearchResults { get; set; } = new ObservableCollection<MailModel>();
         public ObservableCollection<MailModel> SelectedMailList
         {
-            get => selectedMailList; set
+            get => _selectedMailList; set
             {
-                selectedMailList = value;
+                _selectedMailList = value;
                 OnPropertyChanged();
             }
         }
@@ -130,6 +132,12 @@ namespace SaintSender.UI.Views
             _loginConfigWindow.Show();
         }
 
+        private void ShowSendEmailWindow(object obj)
+        {
+            _send = new SendEmailWindow(Repository);
+            _send.Show();
+        }
+
         /// <summary>
         /// Saves mails to storage for the current user
         /// </summary>
@@ -183,6 +191,43 @@ namespace SaintSender.UI.Views
                 Console.WriteLine("No user logged in");
             }
         }
+
+        /// <summary>
+        /// Get mails from gmail's webserver
+        /// </summary>
+        /// <param name="o"></param>
+        public void RefreshMails(object o)
+        {
+            Mails.Clear();
+            foreach (var item in Repository.GetAllMails())
+            {
+                Mails.Add(item);
+            }
+        }
+
+        private void Search(object obj)
+        {
+            var phrase = obj.ToString();
+            if (phrase.Length == 0)
+            {
+                SelectedMailList = Mails;
+                return;
+            }
+
+            var foundEmails = new ObservableCollection<MailModel>();
+            var reg = new Regex(phrase);
+            foreach (var email in Mails)
+            {
+                if (reg.IsMatch(email.Message) || reg.IsMatch(email.Subject) || reg.IsMatch(email.Sender))
+                {
+                    foundEmails.Add(email);
+                }
+            }
+
+            SearchResults = foundEmails;
+            SelectedMailList = SearchResults;
+        }
+
         #endregion
 
         private LoginConfig GetLoginConfig()

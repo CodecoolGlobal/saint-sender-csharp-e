@@ -5,6 +5,11 @@ namespace SaintSender.UI.ViewModels
     public class SendMailViewModel : ViewModelBase
     {
         public MailModel Email { get; } = new MailModel();
+        public SendMailViewModel()
+        {
+            Email.Message = "";
+            Email.Subject = "";
+        }
         public string Message
         {
             get => Email.Message; set
