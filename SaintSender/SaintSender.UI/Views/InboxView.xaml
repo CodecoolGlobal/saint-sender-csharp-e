@@ -22,10 +22,7 @@
               SelectionMode="Single" SelectedItem="{Binding SelectedMail}" Style="{StaticResource listViewBackground}">
         <ListView.ItemTemplate>
             <DataTemplate>
-                <Grid Style="{StaticResource globalBackground}">
-                    <Grid.InputBindings>
-                        <MouseBinding Gesture="LeftDoubleClick"  Command="{Binding ChangeSelectedMailCommand}" />
-                    </Grid.InputBindings>
+                <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="50*"/>
                         <ColumnDefinition Width="50*"/>

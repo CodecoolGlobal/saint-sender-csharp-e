@@ -1,7 +1,10 @@
-﻿using System;
+﻿using MailKit;
+using MimeKit;
+using System;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Linq;
 
 namespace SaintSender.Backend.Models
 {
@@ -33,6 +36,10 @@ namespace SaintSender.Backend.Models
         /// Gets and sets whether the email is marked as read or not
         /// </summary>
         public bool Read { get; set; } = false;
+        /// <summary>
+        /// Gets and sets the unique id of the email that is used for comparing two emails.
+        /// </summary>
+        public UniqueId ID { get => iD; set => iD = value; }
 
         /// <summary>
         /// Initializes a new empty instance of the MailModel
@@ -54,8 +61,39 @@ namespace SaintSender.Backend.Models
             Date = date;
         }
 
+        public MailModel(MimeMessage mimeMessage, UniqueId id)
+        {
+            Message = mimeMessage.HtmlBody;
+            Subject = mimeMessage.Subject;
+            Sender = mimeMessage.From.Mailboxes.First().Address;
+            Date = mimeMessage.Date.DateTime;
+            ID = id;
+        }
+
+        public override bool Equals(object other)
+        {
+            if (!(other is MailModel))
+            {
+                return false;
+            }
+
+            if (ID == ((MailModel)other).ID)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return ID.ToString().GetHashCode();
+        }
+
         [NonSerialized]
         private static string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"/SaintSender";
+        [NonSerialized]
+        private UniqueId iD;
 
         /// <summary>
         /// Stores email to isolated storage

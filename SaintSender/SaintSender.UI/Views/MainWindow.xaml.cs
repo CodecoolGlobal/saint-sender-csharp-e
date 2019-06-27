@@ -1,15 +1,19 @@
 ﻿using SaintSender.Backend.Models;
 using SaintSender.UI.Utils;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Net;
 using System.Net.Mail;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace SaintSender.UI.Views
 {
@@ -21,7 +25,36 @@ namespace SaintSender.UI.Views
         private MailModel _selectedMail = new MailModel();
         private LoginConfig _loginConfigWindow;
         private ObservableCollection<MailModel> selectedMailList;
+        private MailRepository _repository;
 
+        public MainWindow()
+        {
+            DataContext = this;
+            InitializeComponent();
+            Unloaded += MainWindow_Unloaded;
+
+            // Initialize login config window
+            Config = ConfigHandler.Load();
+            _loginConfigWindow = GetLoginConfig();
+
+            Repository = new MailRepository(Config.Address, Config.Password);
+            Repository.CheckCredentials();
+
+            MailRefreshTimer.Interval = new TimeSpan(0, 0, 5);
+            MailRefreshTimer.Tick += (obj, args) => RefreshMailListAsync();
+            MailRefreshTimer.Start();
+
+            // Setup commands
+            SignInCommand = new RelayCommand(ShowSignInWindow);
+            SaveMailsToStorageCommand = new RelayCommand(SaveMailsToStorage);
+            LoadMailsFromStorageCommand = new RelayCommand(LoadMailsFromStorage);
+            LoadMailsFromServerCommand = new RelayCommand(LoadMailsFromServer);
+            SearchCommand = new RelayCommand((obj) =>
+            {
+                Search(obj.ToString());
+                SelectedMailList = SearchResults;
+            }, (obj) => obj.ToString().Length > 3);
+        }
         #region ICommands
         public ICommand SaveMailsToStorageCommand { get; set; }
         public ICommand LoadMailsFromStorageCommand { get; set; }
@@ -50,7 +83,15 @@ namespace SaintSender.UI.Views
 
         public ConfigHandler Config { get; set; }
 
-        public MailRepository Repository { get; set; }
+        public MailRepository Repository
+        {
+            get => _repository;
+            set
+            {
+                _repository = value;
+                RefreshMailListAsync();
+            }
+        }
 
         public MailModel SelectedMail
         {
@@ -63,6 +104,8 @@ namespace SaintSender.UI.Views
         #endregion
 
         #region Property change handler
+        public DispatcherTimer MailRefreshTimer { get; private set; } = new DispatcherTimer();
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -72,10 +115,6 @@ namespace SaintSender.UI.Views
         #endregion
 
         #region Command methods
-        private void MainWindow_Unloaded(object sender, RoutedEventArgs e)
-        {
-            Environment.Exit(0);
-        }
 
         private void ShowSignInWindow(object param)
         {
@@ -130,29 +169,12 @@ namespace SaintSender.UI.Views
         {
             try
             {
-                Mails.Clear();
-                foreach (var item in Repository.GetAllMails())
-                {
-                    Mails.Add(item);
-                }
+                RefreshMailListAsync();
                 SelectedMailList = Mails;
             }
             catch (Exception)
             {
                 Console.WriteLine("No user logged in");
-            }
-        }
-
-        /// <summary>
-        /// Get mails from gmail's webserver
-        /// </summary>
-        /// <param name="o"></param>
-        public void RefreshMails(object o)
-        {
-            Mails.Clear();
-            foreach (var item in Repository.GetAllMails())
-            {
-                Mails.Add(item);
             }
         }
         #endregion
@@ -184,12 +206,15 @@ namespace SaintSender.UI.Views
             }, (obj) => obj.ToString().Length > 3);
 
             // Check for internet connection
-            Task.Run(() => CheckConnection());
+            Task.Run(() => CheckConnection()); }
+            private LoginConfig GetLoginConfig()
+            {
+                return new LoginConfig(Config, Repository);
         }
 
-        private LoginConfig GetLoginConfig()
+        private void MainWindow_Unloaded(object sender, RoutedEventArgs e)
         {
-            return new LoginConfig(Config, Repository);
+            Environment.Exit(0);
         }
 
         private void CheckConnection()
@@ -203,17 +228,30 @@ namespace SaintSender.UI.Views
         /// <returns>True if connection was succesful</returns>
         private static bool CheckForInternetConnection()
         {
-            try
+            return true;
+        }
+
+        public async Task Debug()
+        {
+
+            MailRepository mailRepo = new MailRepository();
+            Mails.Clear();
+            var items = await Task<IEnumerable<MailModel>>.Factory.StartNew(() => mailRepo.GetLastMails(10));
+            foreach (var item in items)
             {
-                using (var client = new WebClient())
-                using (client.OpenRead("http://clients3.google.com/generate_204"))
-                {
-                    return true;
-                }
+                Mails.Add(item);
             }
-            catch
+        }
+
+        private async Task RefreshMailListAsync()
+        {
+            IEnumerable<MailModel> mails = await Task< IEnumerable < MailModel >>.Factory.StartNew(() => Repository.GetLastMails(10));
+            foreach (var item in mails)
             {
-                return false;
+                if (!Mails.Contains(item))
+                {
+                    Mails.Add(item);
+                }
             }
         }
 

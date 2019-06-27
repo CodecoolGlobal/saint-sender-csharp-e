@@ -8,6 +8,7 @@ using MimeKit;
 using System;
 using System.Net.Mail;
 using System.Net;
+using MailKit.Security;
 
 namespace SaintSender.Backend.Models
 {
@@ -72,40 +73,46 @@ namespace SaintSender.Backend.Models
                 // the XOAUTH2 authentication mechanism.
                 client.AuthenticationMechanisms.Remove("XOAUTH2");
 
-                client.Authenticate(login, password);
-
-                // The Inbox folder is always available on all IMAP servers...
-                var inbox = client.Inbox;
-                inbox.Open(FolderAccess.ReadOnly);
-                var results = inbox.Search(SearchQuery.All).Reverse();
-                foreach (var uniqueId in results)
+                try
                 {
-                    var mail = new MailModel();
+                    client.Authenticate(login, password);
 
-                    MimeMessage t = inbox.GetMessage(uniqueId);
+                    // The Inbox folder is always available on all IMAP servers...
+                    var inbox = client.Inbox;
+                    inbox.Open(FolderAccess.ReadOnly);
+                    var results = inbox.Search(SearchOptions.All, SearchQuery.All);
+                    foreach (var uniqueId in results.UniqueIds)
+                    {
+                        MimeMessage t = inbox.GetMessage(uniqueId);
 
-                    mail.Message = t.HtmlBody;
-                    mail.Subject = t.Subject;
-                    mail.Sender = t.From.Mailboxes.First().Address;
-                    mail.Date = t.Date.DateTime;
-                    
-                    mails.Add(mail);
+                        var mail = new MailModel(t, uniqueId);
 
-                    //Mark message as read
-                    //inbox.AddFlags(uniqueId, MessageFlags.Seen, true);
+                        mails.Add(mail);
+
+                        //Mark message as read
+                        //inbox.AddFlags(uniqueId, MessageFlags.Seen, true);
+                    }
                 }
+                catch (AuthenticationException)
+                {
+                    AreCredentialsCorrect = false;
+                }
+                finally
+                {
 
-                client.Disconnect(true);
+                    client.Disconnect(true);
+                }
             }
 
             return mails;
         }
 
         /// <summary>
-        /// Gets latest 10 email as an enumerable collection of MailModel
+        /// Gets latest <paramref name="count"/> number of emails as acollection of MailModel
         /// </summary>
-        /// <returns>Enumerable collection of MailModels</returns>
-        public IEnumerable<MailModel> GetLast10Mails()
+        /// <param name="count">Nubmber of emails to return.</param>
+        /// <returns>A collection of MailModels</returns>
+        public IEnumerable<MailModel> GetLastMails(int count = 10)
         {
             var mails = new List<MailModel>();
 
@@ -117,33 +124,76 @@ namespace SaintSender.Backend.Models
                 // the XOAUTH2 authentication mechanism.
                 client.AuthenticationMechanisms.Remove("XOAUTH2");
 
-                client.Authenticate(login, password);
 
-                // The Inbox folder is always available on all IMAP servers...
-                var inbox = client.Inbox;
-                inbox.Open(FolderAccess.ReadOnly);
-                var results = inbox.Search(SearchQuery.All).Reverse().Take(10);
-                foreach (var uniqueId in results)
+                try
                 {
-                    var mail = new MailModel();
+                    client.Authenticate(login, password);
 
-                    MimeMessage t = inbox.GetMessage(uniqueId);
+                    // The Inbox folder is always available on all IMAP servers...
+                    var inbox = client.Inbox;
+                    inbox.Open(FolderAccess.ReadOnly);
+                    var results = inbox.Search(SearchQuery.All).Reverse().Take(count);
+                    foreach (var uniqueId in results)
+                    {
 
-                    mail.Message = t.HtmlBody;
-                    mail.Subject = t.Subject;
-                    mail.Sender = t.From.Mailboxes.First().Address;
-                    mail.Date = t.Date.DateTime;
-                    
-                    mails.Add(mail);
+                        MimeMessage t = inbox.GetMessage(uniqueId);
 
-                    //Mark message as read
-                    //inbox.AddFlags(uniqueId, MessageFlags.Seen, true);
+
+                        var mail = new MailModel(t, uniqueId);
+
+                        mails.Add(mail);
+
+                        //Mark message as read
+                        //inbox.AddFlags(uniqueId, MessageFlags.Seen, true);
+                    }
                 }
-
-                client.Disconnect(true);
+                catch (AuthenticationException)
+                {
+                    AreCredentialsCorrect = false;
+                }
+                finally
+                {
+                    client.Disconnect(true);
+                }
             }
 
             return mails;
+        }
+
+        /// <summary>
+        /// Last known state of login credentials. Set by <see cref="CheckCredentials"/>.
+        /// </summary>
+        public bool AreCredentialsCorrect { get; private set; } = false;
+
+        /// <summary>
+        /// Checks whether the current credentials are correct.
+        /// </summary>
+        /// <returns>true if the server properly authenticated the credentials.</returns>
+        public bool CheckCredentials()
+        {
+            bool correct;
+            {
+                using (var client = new ImapClient())
+                {
+                    client.Connect(mailServer, port, ssl);
+
+                    // Note: since we don't have an OAuth2 token, disable
+                    // the XOAUTH2 authentication mechanism.
+                    client.AuthenticationMechanisms.Remove("XOAUTH2");
+
+                    try
+                    {
+                        client.Authenticate(login, password);
+                        correct = true;
+                    }
+                    catch (AuthenticationException)
+                    {
+                        correct = false;
+                    }
+                }
+            }
+            AreCredentialsCorrect = correct;
+            return correct;
         }
 
         public void SendEmail(MailModel email)
