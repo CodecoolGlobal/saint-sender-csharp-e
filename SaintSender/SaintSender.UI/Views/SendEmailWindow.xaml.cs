@@ -14,10 +14,8 @@ namespace SaintSender.UI.Views
         public ICommand SendCommand { get; set; }
         public ICommand CloseCommand { get; set; }
         public SendMailViewModel EmailVM { get; set; } = new SendMailViewModel();
-        public SendEmailWindow()
+        public SendEmailWindow(MailRepository mr)
         {
-            var mr = new MailRepository();
-
             SendCommand = new RelayCommand((obj) => {
                 mr.SendEmail(EmailVM.Email);
                 Close();

@@ -58,6 +58,7 @@ namespace SaintSender.UI.Views
         public ICommand SaveMailsToStorageCommand { get; set; }
         public ICommand LoadMailsFromStorageCommand { get; set; }
         public ICommand LoadMailsFromServerCommand { get; set; }
+        public ICommand OpenSendEmailWindowCommand { get; set; }
         public ICommand SearchCommand { get; set; }
         #endregion
 
@@ -95,6 +96,7 @@ namespace SaintSender.UI.Views
                 OnPropertyChanged();
             }
         }
+
         #endregion
 
         #region Property change handler
@@ -171,6 +173,26 @@ namespace SaintSender.UI.Views
                 Console.WriteLine("No user logged in");
             }
         }
+
+        /// <summary>
+        /// Get mails from gmail's webserver
+        /// </summary>
+        /// <param name="o"></param>
+        public void RefreshMails(object o)
+        {
+            Mails.Clear();
+            foreach (var item in Repository.GetAllMails())
+            {
+                Mails.Add(item);
+            }
+        }
+
+        private void showSendEmailWindow(object obj)
+        {
+            sew = new SendEmailWindow(Repository);
+            sew.Show();
+        }
+
         #endregion
 
         private LoginConfig GetLoginConfig()
@@ -216,8 +238,15 @@ namespace SaintSender.UI.Views
             }
         }
 
-        private void Search(string phrase)
+        private void Search(object obj)
         {
+            var phrase = obj.ToString();
+            if (phrase.Length == 0)
+            {
+                SelectedMailList = Mails;
+                return;
+            }
+            
             var foundEmails = new ObservableCollection<MailModel>();
             var reg = new Regex(phrase);
             foreach (var email in Mails)
